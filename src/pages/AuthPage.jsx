@@ -48,7 +48,8 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await fetch(API + "/api/signup", {
+      const res = await fetch("/api/signup", {
+        // 🔥 FIXED
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),

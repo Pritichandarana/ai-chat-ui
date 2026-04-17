@@ -1,4 +1,4 @@
-const API = "https://ai-chat-backend.onrender.com";
+const API = "https://ai-chat-backend-sim2.onrender.com";
 // const API = "http://localhost:5000";
 const timeout = (ms) =>
   new Promise((_, reject) =>
