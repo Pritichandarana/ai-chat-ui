@@ -1,14 +1,14 @@
 const API = "https://ai-chat-backend-sim2.onrender.com";
-console.log("🔥 THIS IS NEW CODE");
+
 const timeout = (ms) =>
   new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timeout")), ms),
   );
 
 const authFetch = async (url, options = {}) => {
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("token");
 
-  const fetchWithTimeout = () =>
+  const fetchWithTimeout = (customToken = token) =>
     Promise.race([
       fetch(API + url, {
         ...options,
@@ -17,7 +17,7 @@ const authFetch = async (url, options = {}) => {
           ...(options.body instanceof FormData
             ? {}
             : { "Content-Type": "application/json" }),
-          Authorization: token ? `Bearer ${token}` : "",
+          Authorization: customToken ? `Bearer ${customToken}` : "",
           ...options.headers,
         },
       }),
@@ -39,13 +39,17 @@ const authFetch = async (url, options = {}) => {
         method: "POST",
         credentials: "include",
       });
-      console.log("updated");
+
       if (!refreshRes.ok) throw new Error("Refresh failed");
 
       const data = await refreshRes.json();
-      localStorage.setItem("token", data.accessToken);
 
-      res = await fetchWithTimeout();
+      // ✅ update token properly
+      localStorage.setItem("token", data.accessToken);
+      token = data.accessToken;
+
+      // ✅ retry with NEW token
+      res = await fetchWithTimeout(token);
     } catch (err) {
       localStorage.removeItem("token");
       window.location.href = "/";
@@ -53,7 +57,7 @@ const authFetch = async (url, options = {}) => {
     }
   }
 
-  // 🔥 SAFE RESPONSE PARSE (IMPORTANT FIX)
+  // 🔥 SAFE RESPONSE PARSE
   const contentType = res.headers.get("content-type");
 
   let data;
