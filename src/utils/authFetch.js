@@ -39,7 +39,7 @@ const authFetch = async (url, options = {}) => {
         method: "POST",
         credentials: "include",
       });
-
+      console.log("updated");
       if (!refreshRes.ok) throw new Error("Refresh failed");
 
       const data = await refreshRes.json();
