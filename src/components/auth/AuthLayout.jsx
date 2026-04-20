@@ -40,6 +40,8 @@ export default function AuthPage() {
       // ✅ LOGIN FLOW
       if (!isSignup) {
         if (data.accessToken) {
+          localStorage.setItem("token", data.accessToken);
+          localStorage.setItem("refreshToken", data.refreshToken); // 🔥 ADD THIS
           login(data.accessToken);
           navigate("/chat");
         } else {

@@ -1,4 +1,5 @@
 const API = "https://ai-chat-backend-sim2.onrender.com";
+const refreshToken = localStorage.getItem("refreshToken");
 console.log("🔥 THIS IS NEW CODE");
 const timeout = (ms) =>
   new Promise((_, reject) =>
@@ -37,7 +38,10 @@ const authFetch = async (url, options = {}) => {
     try {
       const refreshRes = await fetch(`${API}/api/refresh`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
       });
 
       if (!refreshRes.ok) throw new Error("Refresh failed");
