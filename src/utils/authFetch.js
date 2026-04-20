@@ -1,5 +1,5 @@
 const API = "https://ai-chat-backend-sim2.onrender.com";
-
+console.log("🔥 THIS IS NEW CODE");
 const timeout = (ms) =>
   new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timeout")), ms),
