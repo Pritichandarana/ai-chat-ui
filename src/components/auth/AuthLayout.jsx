@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const API = "https://ai-chat-backend-sim2.onrender.com";
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -12,29 +14,46 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
 
   const handleSubmit = async () => {
-    const res = await fetch(
-      `http://localhost:5000/api/${isSignup ? "signup" : "login"}`,
-      {
+    try {
+      const res = await fetch(`${API}/api/${isSignup ? "signup" : "login"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           isSignup ? { name, email, password } : { email, password },
         ),
-      },
-    );
+      });
 
-    const data = await res.json();
+      const contentType = res.headers.get("content-type");
 
-    if (res.ok) {
-      if (data.token) {
-        login(data.token);
-        navigate("/chat");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
       } else {
+        const text = await res.text();
+        throw new Error(text || "Invalid response from server");
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      // ✅ LOGIN FLOW
+      if (!isSignup) {
+        if (data.accessToken) {
+          login(data.accessToken);
+          navigate("/chat");
+        } else {
+          alert("Login failed");
+        }
+      }
+
+      // ✅ SIGNUP FLOW
+      if (isSignup) {
         alert("Signup successful, please login");
         setIsSignup(false);
       }
-    } else {
-      alert(data.error);
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -70,7 +89,6 @@ export default function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          {/* Forgot Password (only on login) */}
           {!isSignup && (
             <div className="flex justify-end -mt-2">
               <span
