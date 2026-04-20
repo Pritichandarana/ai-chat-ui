@@ -1,23 +1,37 @@
 import { useState } from "react";
 
+const API = "https://ai-chat-backend-sim2.onrender.com";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
 
   const handleSubmit = async () => {
-    const res = await fetch("http://localhost:5000/api/forgot-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const res = await fetch(`${API}/api/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await res.json();
+      const contentType = res.headers.get("content-type");
 
-    if (res.ok) {
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text || "Invalid response from server");
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
       alert("Reset link sent to your email");
-    } else {
-      alert(data.error || "Something went wrong");
+    } catch (err) {
+      alert(err.message);
     }
   };
 
