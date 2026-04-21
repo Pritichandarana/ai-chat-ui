@@ -1,4 +1,4 @@
-const API = "https://ai-chat-backend-sim2.onrender.com";
+const API = import.meta.env.VITE_API_URL;
 
 const timeout = (ms) =>
   new Promise((_, reject) =>

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const API = "https://ai-chat-backend-sim2.onrender.com";
+const API = import.meta.env.VITE_API_URL;
 
 export default function ResetPassword() {
   const { token } = useParams();

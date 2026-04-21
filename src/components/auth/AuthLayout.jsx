@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-const API = "https://ai-chat-backend-sim2.onrender.com";
+const API = import.meta.env.VITE_API_URL;
 
 export default function AuthPage() {
   const navigate = useNavigate();
