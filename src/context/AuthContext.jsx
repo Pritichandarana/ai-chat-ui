@@ -33,18 +33,12 @@ export const AuthProvider = ({ children }) => {
   //
   const refreshAccessToken = async () => {
     try {
-      const res = await fetch(`${API}/api/refresh`, {
+      const data = await authFetch("/api/refresh", {
         method: "POST",
-        credentials: "include",
       });
 
-      if (!res.ok) {
-        setUser(null);
-        return false;
-      }
-
       return true;
-    } catch {
+    } catch (err) {
       setUser(null);
       return false;
     }
