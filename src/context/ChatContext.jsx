@@ -11,21 +11,15 @@ export const ChatProvider = ({ children }) => {
   const [input, setInput] = useState("");
 
   const { token } = useAuth();
-  const { setLoading, showToast } = useUI(); // ✅ UI hooks
+  const { setLoading, showToast } = useUI();
 
   // ================= FETCH CHATS =================
   const fetchChats = async () => {
     setLoading(true);
 
     try {
-      const res = await authFetch("/api/chats");
+      const data = await authFetch("/api/chats");
 
-      if (!res.ok) {
-        showToast("Failed to load chats");
-        return;
-      }
-
-      const data = await res.json();
       setChats(data);
 
       if (data.length > 0) {
@@ -33,7 +27,7 @@ export const ChatProvider = ({ children }) => {
       }
     } catch (err) {
       console.error(err);
-      showToast("Something went wrong");
+      showToast("Failed to load chats");
     } finally {
       setLoading(false);
     }
@@ -48,16 +42,9 @@ export const ChatProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const res = await authFetch("/api/chats", {
+      const newChat = await authFetch("/api/chats", {
         method: "POST",
       });
-
-      if (!res.ok) {
-        showToast("Failed to create chat");
-        return;
-      }
-
-      const newChat = await res.json();
 
       setChats((prev) => [newChat, ...prev]);
       setActiveChat(newChat);
@@ -65,7 +52,7 @@ export const ChatProvider = ({ children }) => {
       showToast("New chat created", "success");
     } catch (err) {
       console.error(err);
-      showToast("Network error");
+      showToast("Failed to create chat");
     } finally {
       setLoading(false);
     }
@@ -84,23 +71,13 @@ export const ChatProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const res = await authFetch("/api/chats/chat", {
+      const data = await authFetch("/api/chats/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           messages: [...(activeChat?.messages || []), userMsg],
           chatId: activeChat?._id,
         }),
       });
-
-      if (!res.ok) {
-        showToast("Failed to send message");
-        return;
-      }
-
-      const data = await res.json();
 
       const aiMsg = {
         role: "assistant",
@@ -126,7 +103,7 @@ export const ChatProvider = ({ children }) => {
       );
     } catch (err) {
       console.error(err);
-      showToast("Network error");
+      showToast("Failed to send message");
     } finally {
       setLoading(false);
     }

@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   //
   const fetchUser = async () => {
     try {
-      const res = await fetch(`${API}/check-auth`, {
+      const res = await fetch(`${API}/api/check-auth`, {
         credentials: "include",
       });
 
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   //
   const refreshAccessToken = async () => {
     try {
-      const res = await fetch(`${API}/refresh`, {
+      const res = await fetch(`${API}/api/refresh`, {
         method: "POST",
         credentials: "include",
       });

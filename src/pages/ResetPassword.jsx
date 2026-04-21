@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+const API = "https://ai-chat-backend-sim2.onrender.com";
+
 export default function ResetPassword() {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -9,10 +11,15 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   const handleReset = async () => {
-    try {
-      setLoading(true);
+    if (!password.trim()) {
+      alert("Please enter a new password");
+      return;
+    }
 
-      const res = await fetch("http://localhost:5000/api/reset-password", {
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API}/api/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -22,15 +29,17 @@ export default function ResetPassword() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        alert("Password reset successful");
-        navigate("/login");
-      } else {
-        alert(data.error || "Something went wrong");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to reset password");
       }
+
+      alert("Password reset successful ✅");
+
+      // redirect after success
+      navigate("/login");
     } catch (err) {
       console.error(err);
-      alert("Server error");
+      alert(err.message || "Something went wrong ❌");
     } finally {
       setLoading(false);
     }
@@ -54,7 +63,7 @@ export default function ResetPassword() {
         <button
           onClick={handleReset}
           disabled={loading}
-          className="w-full py-2 font-medium text-white transition bg-indigo-500 rounded-lg hover:bg-indigo-600"
+          className="w-full py-2 font-medium text-white transition bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
         >
           {loading ? "Resetting..." : "Reset Password"}
         </button>

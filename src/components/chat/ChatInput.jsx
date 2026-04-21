@@ -52,11 +52,9 @@ export default function ChatInput() {
     try {
       // ✅ CREATE CHAT FROM BACKEND (FIXED)
       if (!currentChat) {
-        const res = await authFetch("/api/chats", {
+        const newChat = await authFetch("/api/chats", {
           method: "POST",
         });
-
-        const newChat = await res.json();
 
         currentChat = newChat;
 
@@ -72,12 +70,10 @@ export default function ChatInput() {
         formData.append("file", file);
 
         try {
-          const uploadRes = await fetch("http://localhost:5000/api/upload", {
+          const uploadData = await authFetch("/api/upload", {
             method: "POST",
             body: formData,
           });
-
-          const uploadData = await uploadRes.json();
 
           content += `
 
@@ -107,15 +103,13 @@ ${uploadData.text}
       setFile(null);
 
       // ✅ SEND MESSAGE TO BACKEND
-      const res = await authFetch("/api/chats/chat", {
+      const data = await authFetch("/api/chats/chat", {
         method: "POST",
         body: JSON.stringify({
           message: content,
           chatId: currentChat._id,
         }),
       });
-
-      const data = await res.json();
 
       const aiMsg = {
         role: "assistant",
