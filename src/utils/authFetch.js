@@ -1,5 +1,5 @@
 const API = import.meta.env.VITE_API_URL;
-
+console.log("API URL:", API);
 const timeout = (ms) =>
   new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timeout")), ms),
