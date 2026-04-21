@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const API = "https://ai-chat-backend-sim2.onrender.com";
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -16,25 +18,39 @@ export default function AuthPage() {
   //
   const handleLogin = async () => {
     try {
-      const res = await fetch("/api/login", {
-        // 🔥 FIXED (no localhost)
+      const res = await fetch(`${API}/api/login`, {
+        // ✅ FIXED
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
+      const contentType = res.headers.get("content-type");
+
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(text);
+      }
+
       if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || "Login failed");
+        alert(data.error || "Login failed");
         return;
       }
 
-      await login(); // fetch user from cookie
+      // ✅ store token if backend sends
+      if (data.accessToken) {
+        localStorage.setItem("token", data.accessToken);
+      }
+
+      await login();
       navigate("/chat");
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      alert("Something went wrong");
+      alert(err.message || "Something went wrong");
     }
   };
 
@@ -48,8 +64,8 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await fetch("/api/signup", {
-        // 🔥 FIXED
+      const res = await fetch(`${API}/api/signup`, {
+        // ✅ FIXED
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -82,7 +98,7 @@ export default function AuthPage() {
         <div className="space-y-4">
           {isSignup && (
             <input
-              className="w-full px-4 py-2 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 text-white rounded-lg bg-white/10"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -90,7 +106,7 @@ export default function AuthPage() {
           )}
 
           <input
-            className="w-full px-4 py-2 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 text-white rounded-lg bg-white/10"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -98,7 +114,7 @@ export default function AuthPage() {
 
           <input
             type="password"
-            className="w-full px-4 py-2 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 text-white rounded-lg bg-white/10"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -108,7 +124,7 @@ export default function AuthPage() {
             <div className="flex justify-end -mt-2">
               <span
                 onClick={() => navigate("/forgot-password")}
-                className="text-sm text-indigo-400 cursor-pointer hover:underline"
+                className="text-sm text-indigo-400 cursor-pointer"
               >
                 Forgot Password?
               </span>
@@ -117,7 +133,7 @@ export default function AuthPage() {
 
           <button
             onClick={isSignup ? handleSignup : handleLogin}
-            className="w-full py-2 font-medium text-white transition bg-indigo-500 rounded-lg hover:bg-indigo-600"
+            className="w-full py-2 text-white bg-indigo-500 rounded-lg"
           >
             {isSignup ? "Signup" : "Login"}
           </button>
@@ -127,7 +143,7 @@ export default function AuthPage() {
           {isSignup ? "Already have an account?" : "New here?"}
           <span
             onClick={() => setIsSignup(!isSignup)}
-            className="ml-1 text-indigo-400 cursor-pointer hover:underline"
+            className="ml-1 text-indigo-400 cursor-pointer"
           >
             {isSignup ? "Login" : "Signup"}
           </span>

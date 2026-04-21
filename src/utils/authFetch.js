@@ -1,6 +1,5 @@
 const API = "https://ai-chat-backend-sim2.onrender.com";
-const refreshToken = localStorage.getItem("refreshToken");
-console.log("🔥 THIS IS NEW CODE");
+
 const timeout = (ms) =>
   new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timeout")), ms),
@@ -11,7 +10,8 @@ const authFetch = async (url, options = {}) => {
 
   const fetchWithTimeout = (customToken = token) =>
     Promise.race([
-      fetch(API + url, {
+      fetch(`${API}${url}`, {
+        // ✅ ALWAYS FULL URL
         ...options,
         credentials: "include",
         headers: {
@@ -29,39 +29,34 @@ const authFetch = async (url, options = {}) => {
 
   try {
     res = await fetchWithTimeout();
-  } catch (err) {
+  } catch {
     throw new Error("Network timeout");
   }
 
-  // 🔁 HANDLE TOKEN REFRESH
+  // 🔁 TOKEN REFRESH
   if (res.status === 401) {
     try {
       const refreshRes = await fetch(`${API}/api/refresh`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refreshToken }),
+        credentials: "include",
       });
 
       if (!refreshRes.ok) throw new Error("Refresh failed");
 
       const data = await refreshRes.json();
 
-      // ✅ update token properly
       localStorage.setItem("token", data.accessToken);
       token = data.accessToken;
 
-      // ✅ retry with NEW token
       res = await fetchWithTimeout(token);
-    } catch (err) {
+    } catch {
       localStorage.removeItem("token");
       window.location.href = "/";
       return;
     }
   }
 
-  // 🔥 SAFE RESPONSE PARSE
+  // ✅ SAFE JSON PARSE
   const contentType = res.headers.get("content-type");
 
   let data;
@@ -69,7 +64,7 @@ const authFetch = async (url, options = {}) => {
     data = await res.json();
   } else {
     const text = await res.text();
-    throw new Error(text || "Invalid response from server");
+    throw new Error(text || "Invalid server response");
   }
 
   if (!res.ok) {
