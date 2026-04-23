@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
-const API = "/api"; // 🔥 FIXED
+
+const API = "http://localhost:5000"; // ✅ local backend
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -29,43 +30,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   //
-  // ✅ REFRESH TOKEN
-  //
-  const refreshAccessToken = async () => {
-    try {
-      const data = await authFetch("/api/refresh", {
-        method: "POST",
-      });
-
-      return true;
-    } catch (err) {
-      setUser(null);
-      return false;
-    }
-  };
-
-  //
   // ✅ INITIAL LOAD
   //
   useEffect(() => {
-    const initAuth = async () => {
-      const refreshed = await refreshAccessToken();
-
-      if (refreshed) {
-        await fetchUser();
-      }
-
+    const init = async () => {
+      await fetchUser();
       setLoading(false);
     };
 
-    initAuth();
+    init();
   }, []);
 
   //
-  // ✅ LOGIN
+  // ✅ LOGIN (IMPORTANT FIX)
   //
-  const login = async () => {
-    await fetchUser(); // 🔥 FIXED (no checkAuth)
+  const login = async (userData) => {
+    if (userData) {
+      setUser(userData); // 🔥 instant login
+    } else {
+      await fetchUser();
+    }
   };
 
   //
@@ -73,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   //
   const logout = async () => {
     try {
-      await fetch(`${API}/logout`, {
+      await fetch(`${API}/api/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -14,43 +14,34 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
 
   //
-  // ✅ LOGIN
+  // ✅ LOGIN (FIXED)
   //
   const handleLogin = async () => {
     try {
       const res = await fetch(`${API}/api/login`, {
-        // ✅ FIXED
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const contentType = res.headers.get("content-type");
-
-      let data;
-      if (contentType && contentType.includes("application/json")) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        throw new Error(text);
-      }
+      const data = await res.json();
 
       if (!res.ok) {
         alert(data.error || "Login failed");
         return;
       }
 
-      // ✅ store token if backend sends
-      if (data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
+      // 🔥 IMPORTANT: backend must send user
+      if (data.user) {
+        login(data.user); // ✅ set user instantly
+        navigate("/chat"); // ✅ redirect works now
+      } else {
+        alert("User data missing from backend");
       }
-
-      await login();
-      navigate("/chat");
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      alert(err.message || "Something went wrong");
+      alert("Something went wrong");
     }
   };
 
@@ -65,7 +56,6 @@ export default function AuthPage() {
 
     try {
       const res = await fetch(`${API}/api/signup`, {
-        // ✅ FIXED
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
