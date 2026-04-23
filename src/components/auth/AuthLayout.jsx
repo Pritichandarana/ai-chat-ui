@@ -17,11 +17,11 @@ export default function AuthPage() {
       const res = await fetch(`${API}/api/${isSignup ? "signup" : "login"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 🔥 ADD THIS
         body: JSON.stringify(
           isSignup ? { name, email, password } : { email, password },
         ),
       });
-
       const contentType = res.headers.get("content-type");
 
       let data;
