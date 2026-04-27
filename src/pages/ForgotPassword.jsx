@@ -5,6 +5,7 @@ const API = import.meta.env.VITE_API_URL;
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async () => {
     if (!email.trim()) {
@@ -13,26 +14,28 @@ export default function ForgotPassword() {
     }
 
     setLoading(true);
+    setSuccess("");
 
     try {
       const res = await fetch(`${API}/api/forgot-password`, {
         method: "POST",
+        credentials: "include", // 🔥 IMPORTANT (cookies support)
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json(); // ✅ simple + reliable
+      const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.error || "Failed to send reset link");
       }
 
-      alert("Reset link sent to your email ✅");
-      setEmail(""); // clear input
+      setSuccess("Reset link sent successfully ✅");
+      setEmail("");
     } catch (err) {
-      console.error(err);
+      console.error("FORGOT ERROR:", err);
       alert(err.message || "Something went wrong ❌");
     } finally {
       setLoading(false);
@@ -42,9 +45,13 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] to-[#020617] px-4">
       <div className="w-full max-w-md p-6 border shadow-xl bg-white/5 backdrop-blur-lg border-white/10 rounded-2xl">
-        <h2 className="mb-6 text-2xl font-semibold text-center text-white">
+        <h2 className="mb-4 text-2xl font-semibold text-center text-white">
           Forgot Password
         </h2>
+
+        {success && (
+          <p className="mb-4 text-sm text-center text-green-400">{success}</p>
+        )}
 
         <input
           type="email"
