@@ -20,15 +20,26 @@ export default function ForgotPassword() {
     setLoading(true);
     setSuccess(false);
 
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 30000);
+
     try {
+      console.log("Forgot password API:", `${API}/api/forgot-password`);
+
       const res = await fetch(`${API}/api/forgot-password`, {
         method: "POST",
         credentials: "include",
+        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email: email.trim() }),
       });
+
+      clearTimeout(timeout);
 
       const data = await res.json();
 
@@ -40,8 +51,15 @@ export default function ForgotPassword() {
       setEmail("");
       toast.success("Reset link sent successfully");
     } catch (err) {
+      clearTimeout(timeout);
+
       console.error("FORGOT ERROR:", err);
-      toast.error(err.message || "Something went wrong");
+
+      if (err.name === "AbortError") {
+        toast.error("Request timed out. Backend may be sleeping. Try again.");
+      } else {
+        toast.error(err.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +81,7 @@ export default function ForgotPassword() {
         <input
           type="email"
           placeholder="Enter your email"
-          className="w-full px-4 py-2 mb-4 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-4 py-2 mb-4 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
@@ -86,7 +104,8 @@ export default function ForgotPassword() {
 
         <button
           onClick={() => navigate("/")}
-          className="w-full mt-4 text-sm text-indigo-400 hover:underline"
+          disabled={loading}
+          className="w-full mt-4 text-sm text-indigo-400 hover:underline disabled:opacity-50"
         >
           Back to Login
         </button>
