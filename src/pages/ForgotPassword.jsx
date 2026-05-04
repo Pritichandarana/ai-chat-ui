@@ -1,29 +1,33 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const API = import.meta.env.VITE_API_URL;
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async () => {
     if (!email.trim()) {
-      alert("Please enter your email");
+      toast.error("Please enter your email");
       return;
     }
 
     setLoading(true);
-    setSuccess("");
+    setSuccess(false);
 
     try {
       const res = await fetch(`${API}/api/forgot-password`, {
         method: "POST",
-        credentials: "include", // 🔥 IMPORTANT (cookies support)
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       const data = await res.json();
@@ -32,11 +36,12 @@ export default function ForgotPassword() {
         throw new Error(data.error || "Failed to send reset link");
       }
 
-      setSuccess("Reset link sent successfully ✅");
+      setSuccess(true);
       setEmail("");
+      toast.success("Reset link sent successfully");
     } catch (err) {
       console.error("FORGOT ERROR:", err);
-      alert(err.message || "Something went wrong ❌");
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -50,7 +55,9 @@ export default function ForgotPassword() {
         </h2>
 
         {success && (
-          <p className="mb-4 text-sm text-center text-green-400">{success}</p>
+          <p className="mb-4 text-sm text-center text-green-400">
+            Reset link sent successfully ✅
+          </p>
         )}
 
         <input
@@ -59,14 +66,29 @@ export default function ForgotPassword() {
           className="w-full px-4 py-2 mb-4 text-white placeholder-gray-400 rounded-lg outline-none bg-white/10 focus:ring-2 focus:ring-indigo-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
 
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-2 font-medium text-white transition bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+          className="flex items-center justify-center w-full gap-2 py-2 font-medium text-white transition bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
         >
-          {loading ? "Sending..." : "Send Reset Link"}
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent" />
+              Sending...
+            </>
+          ) : (
+            "Send Reset Link"
+          )}
+        </button>
+
+        <button
+          onClick={() => navigate("/")}
+          className="w-full mt-4 text-sm text-indigo-400 hover:underline"
+        >
+          Back to Login
         </button>
       </div>
     </div>

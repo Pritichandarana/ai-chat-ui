@@ -10,37 +10,24 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   const handleReset = async () => {
-    if (!password.trim()) {
-      alert("Please enter a new password");
-      return;
-    }
-
-    setLoading(true);
-
     try {
-      const res = await fetch(`${API}/api/reset-password`, {
+      const res = await fetch(`${API}/api/reset-password/${token}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to reset password");
-      }
+      if (!res.ok) throw new Error(data.error);
 
-      alert("Password reset successful ✅");
-
-      // redirect after success
-      navigate("/login");
+      toast.success("Password reset successful");
     } catch (err) {
-      console.error(err);
-      alert(err.message || "Something went wrong ❌");
-    } finally {
-      setLoading(false);
+      if (err.message.includes("expired")) {
+        toast.error("Link expired. Request a new one.");
+      } else {
+        toast.error(err.message);
+      }
     }
   };
 
