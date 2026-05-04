@@ -24,7 +24,7 @@ export default function ForgotPassword() {
 
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 30000);
+    }, 60000);
 
     try {
       console.log("Forgot password API:", `${API}/api/forgot-password`);
