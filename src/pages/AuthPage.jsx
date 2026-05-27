@@ -20,9 +20,10 @@ export default function AuthPage() {
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [resending, setResending] = useState(false);
 
-  // Email validation regex
+  // Strict email validation regex
   const validateEmail = (emailStr) => {
-    return /\S+@\S+\.\S+/.test(emailStr);
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return regex.test(emailStr);
   };
 
   // ✅ SUBMIT ACTION
