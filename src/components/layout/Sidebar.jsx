@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
+import { useUI } from "../../context/UIContext";
 import authFetch from "../../utils/authFetch";
 import {
   PlusIcon,
@@ -14,9 +15,12 @@ import {
 } from "../ui/Icons";
 
 export default function Sidebar({ open, setOpen }) {
-  const { chats, setActiveChat, createNewChat, setChats, activeChat } =
+  const { chats, setActiveChat, createNewChat, setChats, activeChat, selectedWorkspace, workspaces } =
     useContext(ChatContext);
   const { logout, user } = useAuth();
+  const { setSettingsModalOpen } = useUI();
+
+  const activeWorkspaceObj = workspaces.find((w) => w.id === selectedWorkspace) || workspaces[0];
 
   const [hiddenChats, setHiddenChats] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
@@ -93,9 +97,15 @@ export default function Sidebar({ open, setOpen }) {
     );
   };
 
-  // Comprehensive Chat Search (searches both chat titles & message contents)
+  // Workspace and Search Filter
+  const chatWorkspaceMap = JSON.parse(localStorage.getItem("chat_workspace_map") || "{}");
+
   const filteredChats = chats
     .filter((chat) => !hiddenChats.includes(chat._id))
+    .filter((chat) => {
+      const ws = chatWorkspaceMap[chat._id] || "personal";
+      return ws === selectedWorkspace;
+    })
     .filter((chat) => {
       if (!search.trim()) return true;
       const term = search.toLowerCase();
@@ -146,20 +156,21 @@ export default function Sidebar({ open, setOpen }) {
         <div style={{ width: "260px", display: "flex", flexDirection: "column", height: "100%" }}>
           {/* ─── Logo / Brand ─── */}
           <div
-            className="flex items-center gap-3 px-4 py-4 shrink-0 border-b border-mm-border"
+            className="flex items-center gap-3 px-4 py-4 shrink-0 border-b border-mm-border cursor-pointer hover:bg-mm-card-hover/20 transition-colors"
+            onClick={() => setSettingsModalOpen(true)}
+            title="Configure Workspace Settings"
           >
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center gradient-bg shrink-0 shadow-glow-purple"
-              style={{ boxShadow: "0 0 16px var(--glass-border)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-mm-purple/10 border border-mm-purple/20 shrink-0 select-none text-lg"
             >
-              <span className="text-white font-black text-base select-none">M</span>
+              <span>{activeWorkspaceObj.icon}</span>
             </div>
-            <div className="flex flex-col">
-              <p className="font-bold text-mm-text text-base leading-none tracking-tight">
-                MindMesh
+            <div className="flex flex-col min-w-0 flex-1">
+              <p className="font-bold text-mm-text text-sm leading-none tracking-tight truncate">
+                {activeWorkspaceObj.name}
               </p>
-              <p className="text-[10px] mt-1 text-mm-muted font-medium uppercase tracking-wider">
-                AI Workspace
+              <p className="text-[9px] mt-1.5 text-mm-muted font-medium uppercase tracking-wider truncate">
+                {activeWorkspaceObj.desc || "AI Workspace"}
               </p>
             </div>
           </div>
@@ -338,6 +349,7 @@ export default function Sidebar({ open, setOpen }) {
           >
             {/* Settings button */}
             <button
+              onClick={() => setSettingsModalOpen(true)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-mm-muted hover:bg-mm-card-hover hover:text-mm-text transition-all duration-200"
             >
               <SettingsIcon size={14} />

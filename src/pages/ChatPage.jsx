@@ -4,6 +4,7 @@ import ChatMessages from "../components/chat/ChatMessages";
 import ChatInput from "../components/chat/ChatInput";
 import Header from "../components/layout/Header";
 import Sidebar from "../components/layout/Sidebar";
+import SettingsModal from "../components/chat/SettingsModal";
 
 export default function ChatPage() {
   const { chats } = useContext(ChatContext);
@@ -27,6 +28,9 @@ export default function ChatPage() {
           <ChatInput />
         </div>
       </div>
+
+      {/* Workspace Settings Dialog */}
+      <SettingsModal />
     </div>
   );
 }

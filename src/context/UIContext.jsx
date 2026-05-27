@@ -5,6 +5,7 @@ const UIContext = createContext();
 export const UIProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   
   // Theme state: default to localStorage or system preference
   const [theme, setTheme] = useState(() => {
@@ -63,6 +64,8 @@ export const UIProvider = ({ children }) => {
         showToast,
         theme,
         toggleTheme,
+        settingsModalOpen,
+        setSettingsModalOpen,
       }}
     >
       {children}

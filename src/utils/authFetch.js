@@ -1,5 +1,7 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-console.log("API URL:", API);
+const getApiUrl = () => {
+  return localStorage.getItem("custom_api_url") || import.meta.env.VITE_API_URL || "http://localhost:5000";
+};
+
 const timeout = (ms) =>
   new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Request timeout")), ms),
@@ -7,10 +9,11 @@ const timeout = (ms) =>
 
 const authFetch = async (url, options = {}) => {
   let token = localStorage.getItem("token");
+  const API_BASE = getApiUrl();
 
   const fetchWithTimeout = (customToken = token) =>
     Promise.race([
-      fetch(`${API}${url}`, {
+      fetch(`${API_BASE}${url}`, {
         // ✅ ALWAYS FULL URL
         ...options,
         credentials: "include",
@@ -36,7 +39,7 @@ const authFetch = async (url, options = {}) => {
   // 🔁 TOKEN REFRESH
   if (res.status === 401) {
     try {
-      const refreshRes = await fetch(`${API}/api/refresh`, {
+      const refreshRes = await fetch(`${API_BASE}/api/refresh`, {
         method: "POST",
         credentials: "include",
       });

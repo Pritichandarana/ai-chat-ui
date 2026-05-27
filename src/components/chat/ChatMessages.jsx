@@ -176,10 +176,14 @@ function Message({ msg, index, userInitial, isLast }) {
     ? msg.content.replace(/FILE_URL:.*\n?/g, "").trim()
     : "";
 
-  // Strip Perplexity Focus Mode label from visual rendering
-  const displayContent = cleanContent.startsWith("[Mode:")
-    ? cleanContent.replace(/^\[Mode:\s*\w+\]\s*/, "")
-    : cleanContent;
+  // Strip prepended system prompt and Perplexity Focus Mode label from visual rendering
+  let displayContent = cleanContent;
+  if (displayContent.startsWith("[System:")) {
+    displayContent = displayContent.replace(/^\[System:\s*[\s\S]*?\]\s*/, "");
+  }
+  if (displayContent.startsWith("[Mode:")) {
+    displayContent = displayContent.replace(/^\[Mode:\s*\w+\]\s*/, "");
+  }
 
   const handleCopyText = () => {
     navigator.clipboard.writeText(cleanContent).then(() => {

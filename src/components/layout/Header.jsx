@@ -11,12 +11,7 @@ const MODELS = [
   { name: "DeepSeek V3", id: "deepseek-v3", provider: "Simulated", speed: "Deep Reasoning", tagColor: "#10B981" }
 ];
 
-const WORKSPACES = [
-  { name: "Personal Workspace", icon: "👤", desc: "Private files and conversations" },
-  { name: "Engineering Hub", icon: "💻", desc: "Dev tools and system prompts" },
-  { name: "Research Lab", icon: "🔬", desc: "Deep analytical intelligence" },
-  { name: "MindMesh Inc.", icon: "🚀", desc: "Company shared workspace" }
-];
+
 
 function SunIcon({ size = 15 }) {
   return (
@@ -36,9 +31,9 @@ function MoonIcon({ size = 15 }) {
 }
 
 export default function Header({ setSidebarOpen, sidebarOpen }) {
-  const { activeChat, selectedModel, setSelectedModel, selectedWorkspace, setSelectedWorkspace } = useContext(ChatContext);
+  const { activeChat, selectedModel, setSelectedModel, selectedWorkspace, setSelectedWorkspace, workspaces } = useContext(ChatContext);
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useUI();
+  const { theme, toggleTheme, setSettingsModalOpen } = useUI();
 
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
@@ -68,7 +63,7 @@ export default function Header({ setSidebarOpen, sidebarOpen }) {
   }, []);
 
   const activeModelObj = MODELS.find((m) => m.name === selectedModel) || MODELS[0];
-  const activeWorkspaceObj = WORKSPACES.find((w) => w.name === selectedWorkspace) || WORKSPACES[0];
+  const activeWorkspaceObj = workspaces.find((w) => w.id === selectedWorkspace) || workspaces[0];
 
   return (
     <header
@@ -111,13 +106,13 @@ export default function Header({ setSidebarOpen, sidebarOpen }) {
                 Switch Workspace
               </div>
               <div className="space-y-0.5">
-                {WORKSPACES.map((w) => {
-                  const isSel = w.name === selectedWorkspace;
+                {workspaces.map((w) => {
+                  const isSel = w.id === selectedWorkspace;
                   return (
                     <button
-                      key={w.name}
+                      key={w.id}
                       onClick={() => {
-                        setSelectedWorkspace(w.name);
+                        setSelectedWorkspace(w.id);
                         setWorkspaceDropdownOpen(false);
                       }}
                       className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-all duration-150 ${
@@ -281,6 +276,10 @@ export default function Header({ setSidebarOpen, sidebarOpen }) {
               </div>
               <div className="space-y-0.5">
                 <button
+                  onClick={() => {
+                    setSettingsModalOpen(true);
+                    setProfileDropdownOpen(false);
+                  }}
                   className="w-full flex items-center gap-2 p-2 rounded-xl text-left text-xs font-semibold text-mm-muted hover:bg-mm-card-hover hover:text-mm-text transition-colors"
                 >
                   <SettingsIcon size={13} />
