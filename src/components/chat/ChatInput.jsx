@@ -576,7 +576,7 @@ export default function ChatInput() {
 
           {/* Floating Input Panel */}
           <div
-            className={`glass input-ring rounded-2xl relative shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/5 bg-[#1A2238]/60 backdrop-blur-2xl ${
+            className={`glass input-ring rounded-2xl relative shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-mm-border bg-mm-card/65 backdrop-blur-2xl ${
               dragActive ? "drag-active" : ""
             }`}
             onDrop={handleDrop}
@@ -659,7 +659,7 @@ export default function ChatInput() {
                 <button
                   type="button"
                   onClick={() => setFocusDropdownOpen(!focusDropdownOpen)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300 transition-colors"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors"
                 >
                   <span className="text-xs">{activeFocusObj.icon}</span>
                   <span>{activeFocusObj.name}</span>
@@ -667,7 +667,7 @@ export default function ChatInput() {
 
                 {focusDropdownOpen && (
                   <div
-                    className="absolute left-0 bottom-full mb-2 w-56 rounded-xl glass p-1 shadow-2xl border border-white/10"
+                    className="absolute left-0 bottom-full mb-2 w-56 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card"
                     style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
                   >
                     {FOCUS_MODES.map((f) => {
@@ -681,13 +681,13 @@ export default function ChatInput() {
                             setFocusDropdownOpen(false);
                           }}
                           className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
-                            isSel ? "bg-[#7C3AED]/12 text-[#a78bfa]" : "hover:bg-white/[0.03] text-gray-400"
+                            isSel ? "bg-mm-purple/10 text-mm-purple" : "hover:bg-mm-card-hover text-mm-muted"
                           }`}
                         >
                           <span className="text-sm select-none">{f.icon}</span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-gray-200">{f.name}</p>
-                            <p className="text-[9px] text-gray-500 truncate mt-0.5">{f.desc}</p>
+                            <p className="text-xs font-bold text-mm-text">{f.name}</p>
+                            <p className="text-[9px] text-mm-muted truncate mt-0.5">{f.desc}</p>
                           </div>
                         </button>
                       );
@@ -730,7 +730,7 @@ export default function ChatInput() {
                     : `Query MindMesh using ${focusMode} mode… (Shift+Enter for newline)`
                 }
                 rows={1}
-                className="flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed text-white max-h-[140px] min-h-[22px] placeholder-gray-500"
+                className="flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed text-mm-text max-h-[140px] min-h-[22px] placeholder-gray-500"
               />
 
               <button

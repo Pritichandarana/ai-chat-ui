@@ -60,15 +60,14 @@ export default function EmptyState() {
 
       {/* Greeting */}
       <h1
-        className="text-3xl font-bold mb-2 text-center"
-        style={{ color: "#F9FAFB" }}
+        className="text-3xl font-black mb-2 text-center text-mm-text"
       >
         {greeting},{" "}
         <span className="gradient-text">
           {user?.name?.split(" ")[0] || "there"}
         </span>
       </h1>
-      <p className="text-base mb-8 text-center max-w-sm" style={{ color: "#6B7280" }}>
+      <p className="text-base mb-8 text-center max-w-sm text-mm-muted">
         Your AI workspace is ready. Ask anything, generate images, or upload
         files to get started.
       </p>
@@ -114,12 +113,11 @@ export default function EmptyState() {
               </span>
               <div>
                 <p
-                  className="text-sm font-semibold mb-0.5"
-                  style={{ color: "#F9FAFB" }}
+                  className="text-sm font-semibold mb-0.5 text-mm-text"
                 >
                   {s.label}
                 </p>
-                <p className="text-xs leading-relaxed" style={{ color: "#6B7280" }}>
+                <p className="text-xs leading-relaxed text-mm-muted">
                   {s.prompt.slice(0, 55)}…
                 </p>
               </div>
