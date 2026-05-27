@@ -9,7 +9,16 @@ import {
   SendIcon,
   XIcon,
   StopIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "../ui/Icons";
+
+const MODELS = [
+  { name: "DeepSeek V3", id: "deepseek-v3", provider: "Simulated", speed: "Deep Reasoning", tagColor: "#10B981" },
+  { name: "Groq LLaMA 3.3", id: "llama-3.3-70b-versatile", provider: "Groq", speed: "Fastest Response", tagColor: "#06B6D4" },
+  { name: "Mixtral 8x7B", id: "mixtral-8x7b-32768", provider: "Groq", speed: "High Token Context", tagColor: "#7C3AED" },
+  { name: "Gemma 2 9B", id: "gemma2-9b-it", provider: "Groq", speed: "Efficient Analytics", tagColor: "#F59E0B" }
+];
 
 function getFileIcon(file) {
   if (!file) return "📎";
@@ -158,9 +167,10 @@ export default function ChatInput() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [focusMode, setFocusMode] = useState("All");
   const [focusDropdownOpen, setFocusDropdownOpen] = useState(false);
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [simulatedSearchStatus, setSimulatedSearchStatus] = useState("");
 
-  const { activeChat, setChats, setActiveChat, setIsAiTyping, selectedModel } =
+  const { activeChat, setChats, setActiveChat, setIsAiTyping, selectedModel, setSelectedModel } =
     useContext(ChatContext);
 
   const fileRef = useRef(null);
@@ -170,17 +180,23 @@ export default function ChatInput() {
   const chunksRef = useRef([]);
   const recordTimerRef = useRef(null);
   const focusRef = useRef(null);
+  const modelRef = useRef(null);
 
-  // Close focus dropdown
+  // Close dropdowns
   useEffect(() => {
     function clickOutside(e) {
       if (focusRef.current && !focusRef.current.contains(e.target)) {
         setFocusDropdownOpen(false);
       }
+      if (modelRef.current && !modelRef.current.contains(e.target)) {
+        setModelDropdownOpen(false);
+      }
     }
     document.addEventListener("mousedown", clickOutside);
     return () => document.removeEventListener("mousedown", clickOutside);
   }, []);
+
+  const activeModelObj = MODELS.find((m) => m.name === selectedModel) || MODELS[0];
 
   // Listen for EmptyState suggestion events
   useEffect(() => {
@@ -684,6 +700,76 @@ export default function ChatInput() {
                             <p className="text-xs font-bold text-mm-text">{f.name}</p>
                             <p className="text-[9px] text-mm-muted truncate mt-0.5">{f.desc}</p>
                           </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Model Switcher dropdown */}
+              <div className="relative" ref={modelRef}>
+                <button
+                  type="button"
+                  onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors select-none"
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: activeModelObj.tagColor,
+                      boxShadow: `0 0 6px ${activeModelObj.tagColor}`,
+                    }}
+                  />
+                  <span>{activeModelObj.name}</span>
+                  <span className="text-mm-muted">
+                    <ChevronDownIcon size={10} />
+                  </span>
+                </button>
+
+                {modelDropdownOpen && (
+                  <div
+                    className="absolute left-0 bottom-full mb-2 w-64 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50 animate-fade-in-up"
+                    style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+                  >
+                    <div className="px-2.5 py-1 text-[8px] uppercase tracking-widest font-black text-mm-muted border-b border-mm-border mb-1">
+                      Choose AI Model
+                    </div>
+                    {MODELS.map((m) => {
+                      const isSel = m.name === selectedModel;
+                      return (
+                        <button
+                          key={m.name}
+                          type="button"
+                          onClick={() => {
+                            setSelectedModel(m.name);
+                            setModelDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-all duration-150 border ${
+                            isSel ? "bg-mm-purple/10 border-mm-purple/20 text-mm-text" : "hover:bg-mm-card-hover border-transparent text-mm-muted"
+                          }`}
+                        >
+                          <div
+                            className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                            style={{
+                              backgroundColor: m.tagColor,
+                              boxShadow: `0 0 4px ${m.tagColor}`
+                            }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-mm-text">{m.name}</span>
+                              <span className="text-[7px] px-1 rounded bg-mm-sidebar border border-mm-border text-mm-muted font-mono font-bold">
+                                {m.provider}
+                              </span>
+                            </div>
+                            <p className="text-[9px] text-mm-muted mt-0.5">{m.speed}</p>
+                          </div>
+                          {isSel && (
+                            <span className="text-mm-cyan shrink-0 mt-0.5">
+                              <CheckIcon size={10} />
+                            </span>
+                          )}
                         </button>
                       );
                     })}

@@ -202,10 +202,10 @@ function Message({ msg, index, userInitial, isLast }) {
   if (isUser) {
     return (
       <div
-        className="flex items-end justify-end gap-3 px-4 py-2 msg-enter group"
+        className="flex items-end justify-end gap-3.5 py-3 msg-enter group"
         style={{ animationDelay: `${Math.min(index * 0.04, 0.3)}s` }}
       >
-        <div className="flex flex-col items-end max-w-[75%] relative">
+        <div className="flex flex-col items-end max-w-[85%] relative">
           <div
             className="user-bubble px-4 py-3 text-sm leading-relaxed shadow-lg relative text-mm-text"
             style={{ wordBreak: "break-word" }}
@@ -225,11 +225,11 @@ function Message({ msg, index, userInitial, isLast }) {
   // Assistant / AI Message
   return (
     <div
-      className="flex items-start gap-3 px-4 py-2.5 msg-enter group relative"
+      className="flex items-start gap-3.5 py-3.5 msg-enter group relative"
       style={{ animationDelay: `${Math.min(index * 0.04, 0.3)}s` }}
     >
       <div className="ai-avatar shrink-0 mt-0.5 select-none font-black">M</div>
-      <div className="flex flex-col max-w-[80%] relative">
+      <div className="flex flex-col max-w-[85%] relative">
         <div
           className="ai-bubble px-4.5 py-3.5 text-sm leading-relaxed shadow-md relative text-mm-text"
           style={{ wordBreak: "break-word" }}
@@ -326,34 +326,42 @@ export default function ChatMessages() {
     <div
       ref={containerRef}
       className="chat-scroll"
-      style={{ paddingTop: "12px", paddingBottom: "180px" }}
+      style={{ paddingTop: "16px", paddingBottom: "180px" }}
     >
-      {/* Date divider */}
-      <div className="flex items-center gap-3 px-6 mb-5">
-        <div className="flex-1 h-px bg-mm-border" />
-        <span className="text-[10px] uppercase font-bold tracking-widest text-mm-muted select-none">
-          {new Date().toLocaleDateString([], {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </span>
-        <div className="flex-1 h-px bg-mm-border" />
+      <div className="max-w-3xl mx-auto w-full px-4 md:px-6">
+        {/* Date divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-mm-border" />
+          <span className="text-[10px] uppercase font-bold tracking-widest text-mm-muted select-none">
+            {new Date().toLocaleDateString([], {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+          <div className="flex-1 h-px bg-mm-border" />
+        </div>
+
+        {/* Messages */}
+        <div className="space-y-2">
+          {activeChat.messages.map((msg, i) => (
+            <Message
+              key={i}
+              msg={msg}
+              index={i}
+              userInitial={userInitial}
+              isLast={i === activeChat.messages.length - 1}
+            />
+          ))}
+        </div>
+
+        {/* Typing Indicator */}
+        {isAiTyping && (
+          <div className="py-3.5">
+            <TypingIndicator />
+          </div>
+        )}
       </div>
-
-      {/* Messages */}
-      {activeChat.messages.map((msg, i) => (
-        <Message
-          key={i}
-          msg={msg}
-          index={i}
-          userInitial={userInitial}
-          isLast={i === activeChat.messages.length - 1}
-        />
-      ))}
-
-      {/* Typing Indicator */}
-      {isAiTyping && <TypingIndicator />}
 
       {/* Scroll anchor */}
       <div ref={bottomRef} style={{ height: "1px" }} />
