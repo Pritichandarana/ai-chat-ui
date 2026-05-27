@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -11,24 +12,64 @@ import ProtectedRoute from "./components/layout/ProtectedRoute";
 function App() {
   const { user, loading } = useAuth();
 
+  // Always force dark mode for MindMesh
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.backgroundColor = "#0B1020";
+  }, []);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-screen h-screen text-white bg-[#020617]">
-        Loading...
+      <div
+        style={{ backgroundColor: "#0B1020" }}
+        className="flex flex-col items-center justify-center w-screen h-screen gap-4"
+      >
+        {/* Logo */}
+        <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center shadow-glow-purple-lg animate-float">
+          <span className="text-white font-black text-2xl">M</span>
+        </div>
+        {/* Spinner */}
+        <div className="flex gap-1.5">
+          <div className="typing-dot" />
+          <div className="typing-dot" />
+          <div className="typing-dot" />
+        </div>
+        <p className="text-mm-muted text-sm font-medium tracking-wide">
+          Loading MindMesh...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-screen bg-white dark:bg-[#343541] text-black dark:text-white">
-      <Toaster position="top-right" />
+    <div
+      style={{ backgroundColor: "#0B1020" }}
+      className="h-screen w-screen text-mm-text overflow-hidden"
+    >
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#1A2238",
+            color: "#F9FAFB",
+            border: "1px solid rgba(124,58,237,0.25)",
+            borderRadius: "12px",
+            fontSize: "13px",
+          },
+          success: {
+            iconTheme: { primary: "#06B6D4", secondary: "#0B1020" },
+          },
+          error: {
+            iconTheme: { primary: "#EF4444", secondary: "#0B1020" },
+          },
+        }}
+      />
 
       <Routes>
         <Route
           path="/"
           element={user ? <Navigate to="/chat" replace /> : <AuthPage />}
         />
-
         <Route
           path="/chat"
           element={
@@ -37,7 +78,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/" replace />} />

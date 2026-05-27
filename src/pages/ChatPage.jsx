@@ -22,11 +22,7 @@ export default function ChatPage() {
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
         {/* CHAT AREA */}
-        <div
-          className={`flex flex-col flex-1 h-full transition-all duration-300 ${
-            sidebarOpen ? "ml-64" : "ml-0"
-          } md:ml-0`}
-        >
+        <div className="flex flex-col flex-1 h-full relative overflow-hidden">
           <ChatMessages />
           <ChatInput />
         </div>
