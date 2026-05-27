@@ -30,8 +30,8 @@ export default function VerifyEmail() {
         }
 
         setStatus("success");
-        setMessage(data.message || "Your account has been verified successfully!");
-        toast.success("Account verified successfully!");
+        setMessage("Email verified successfully. You can now log in.");
+        toast.success("Email verified successfully. You can now log in.");
       } catch (err) {
         console.error("VERIFY EMAIL ERROR:", err);
         setStatus("error");

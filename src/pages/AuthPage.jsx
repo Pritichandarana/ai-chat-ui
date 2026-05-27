@@ -29,13 +29,30 @@ export default function AuthPage() {
   // ✅ SUBMIT ACTION
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const cleanedEmail = email.trim().toLowerCase();
+
     if (isSignup && !name.trim()) {
       toast.error("Please enter your name");
       return;
     }
-    if (!email.trim() || !validateEmail(email)) {
-      toast.error("Please enter a valid email address");
+    if (!cleanedEmail || !validateEmail(cleanedEmail)) {
+      toast.error("Please enter a valid email address.");
       return;
+    }
+    if (isSignup) {
+      const disposableDomains = [
+        "mailinator.com",
+        "tempmail.com",
+        "10minutemail.com",
+        "guerrillamail.com",
+        "yopmail.com",
+        "fakeinbox.com"
+      ];
+      const domain = cleanedEmail.split("@")[1];
+      if (disposableDomains.includes(domain?.toLowerCase())) {
+        toast.error("Temporary email addresses are not supported.");
+        return;
+      }
     }
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
@@ -51,7 +68,7 @@ export default function AuthPage() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isSignup ? { name, email, password } : { email, password }
+          isSignup ? { name, email: cleanedEmail, password } : { email: cleanedEmail, password }
         ),
       });
 
@@ -59,8 +76,8 @@ export default function AuthPage() {
 
       if (!res.ok) {
         if (res.status === 403 && data.needsVerification) {
-          toast.error(data.error || "Please verify your email address.");
-          setUnverifiedEmail(email);
+          toast.error(data.error || "Please verify your email before logging in.");
+          setUnverifiedEmail(cleanedEmail);
           setLoading(false);
           return;
         }
@@ -70,7 +87,7 @@ export default function AuthPage() {
       }
 
       if (isSignup) {
-        toast.success("Account created! Verification link sent.");
+        toast.success("Account created successfully. Verification link sent to your email.");
         setSignupSuccess(true);
         setPassword("");
       } else {
@@ -157,7 +174,7 @@ export default function AuthPage() {
             </div>
 
             <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm leading-relaxed text-left">
-              A verification link has been sent to <strong className="text-white break-all">{email}</strong>. Please check your inbox and click the link to activate your account.
+              Account created successfully. Verification link sent to your email (<strong className="text-white break-all">{email}</strong>).
             </div>
 
             <p className="text-xs text-mm-muted leading-relaxed">
