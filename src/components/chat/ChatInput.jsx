@@ -515,12 +515,7 @@ export default function ChatInput() {
       )}
 
       {/* Floating Wrapper */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-10 pointer-events-none"
-        style={{
-          background: "linear-gradient(180deg, transparent 0%, rgba(11, 16, 32, 0.9) 70%, #0B1020 100%)",
-        }}
-      >
+      <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-10 pointer-events-none">
         <div className="max-w-3xl mx-auto pointer-events-auto">
           {/* Web Search Simulated Indicator */}
           {simulatedSearchStatus && (

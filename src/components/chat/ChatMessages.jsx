@@ -203,8 +203,8 @@ function Message({ msg, index, userInitial, isLast }) {
       >
         <div className="flex flex-col items-end max-w-[75%] relative">
           <div
-            className="user-bubble px-4 py-3 text-sm leading-relaxed shadow-lg relative"
-            style={{ color: "#F9FAFB", wordBreak: "break-word" }}
+            className="user-bubble px-4 py-3 text-sm leading-relaxed shadow-lg relative text-mm-text"
+            style={{ wordBreak: "break-word" }}
           >
             {displayContent && <p style={{ whiteSpace: "pre-wrap" }}>{displayContent}</p>}
             {msg.file && <MediaMessage file={msg.file} />}
@@ -227,8 +227,8 @@ function Message({ msg, index, userInitial, isLast }) {
       <div className="ai-avatar shrink-0 mt-0.5 select-none font-black">M</div>
       <div className="flex flex-col max-w-[80%] relative">
         <div
-          className="ai-bubble px-4.5 py-3.5 text-sm leading-relaxed shadow-md relative"
-          style={{ color: "rgba(249,250,251,0.95)", wordBreak: "break-word" }}
+          className="ai-bubble px-4.5 py-3.5 text-sm leading-relaxed shadow-md relative text-mm-text"
+          style={{ wordBreak: "break-word" }}
         >
           {displayContent ? (
             <MarkdownContent content={displayContent} />
