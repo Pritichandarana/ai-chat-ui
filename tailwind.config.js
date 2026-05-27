@@ -5,17 +5,17 @@ export default {
     extend: {
       colors: {
         mm: {
-          bg: "#0B1020",
-          sidebar: "#111827",
-          card: "#1A2238",
-          "card-hover": "#1E2A45",
-          purple: "#7C3AED",
-          "purple-light": "#9D5CF5",
-          cyan: "#06B6D4",
-          "cyan-light": "#22D3EE",
-          text: "#F9FAFB",
-          muted: "#9CA3AF",
-          border: "rgba(255,255,255,0.06)",
+          bg: "var(--bg-primary)",
+          sidebar: "var(--bg-sidebar)",
+          card: "var(--bg-card)",
+          "card-hover": "var(--bg-card-hover)",
+          purple: "var(--accent-purple)",
+          "purple-light": "var(--accent-purple-light)",
+          cyan: "var(--accent-cyan)",
+          "cyan-light": "var(--accent-cyan-light)",
+          text: "var(--text-primary)",
+          muted: "var(--text-muted)",
+          border: "var(--border-subtle)",
         },
       },
       fontFamily: {

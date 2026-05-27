@@ -8,21 +8,21 @@ import Sidebar from "../components/layout/Sidebar";
 export default function ChatPage() {
   const { chats } = useContext(ChatContext);
 
-  // ✅ Sidebar state (important)
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Sidebar toggle state (open by default on desktop)
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* HEADER */}
-      <Header setSidebarOpen={setSidebarOpen} />
+    <div className="flex h-screen w-screen overflow-hidden bg-mm-bg text-mm-text">
+      {/* ─── SIDEBAR (Left side, full height) ─── */}
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
-      {/* MAIN LAYOUT */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* SIDEBAR */}
-        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+      {/* ─── MAIN WORKSPACE AREA (Right side, spans remaining width) ─── */}
+      <div className="flex flex-col flex-1 h-full overflow-hidden relative">
+        {/* Header/Navbar */}
+        <Header setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
 
-        {/* CHAT AREA */}
-        <div className="flex flex-col flex-1 h-full relative overflow-hidden">
+        {/* Chat Message Viewport & Input */}
+        <div className="flex-1 relative overflow-hidden flex flex-col">
           <ChatMessages />
           <ChatInput />
         </div>

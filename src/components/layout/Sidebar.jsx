@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useEffect } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import authFetch from "../../utils/authFetch";
@@ -27,7 +27,7 @@ export default function Sidebar({ open, setOpen }) {
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
 
-  // Detect screen size
+  // Detect screen size for responsive drawer
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -93,12 +93,17 @@ export default function Sidebar({ open, setOpen }) {
     );
   };
 
+  // Comprehensive Chat Search (searches both chat titles & message contents)
   const filteredChats = chats
     .filter((chat) => !hiddenChats.includes(chat._id))
     .filter((chat) => {
       if (!search.trim()) return true;
-      const title = chat.title || chat.messages?.[0]?.content || "New Chat";
-      return title.toLowerCase().includes(search.toLowerCase());
+      const term = search.toLowerCase();
+      const titleMatches = (chat.title || "").toLowerCase().includes(term);
+      const messageMatches = (chat.messages || []).some((m) =>
+        (m.content || "").toLowerCase().includes(term)
+      );
+      return titleMatches || messageMatches;
     });
 
   const getChatLabel = (chat) => {
@@ -107,8 +112,6 @@ export default function Sidebar({ open, setOpen }) {
   };
 
   const sidebarStyle = {
-    backgroundColor: "#111827",
-    borderRight: "1px solid rgba(255,255,255,0.06)",
     width: open ? "260px" : "0px",
     minWidth: open ? "260px" : "0px",
     overflow: "hidden",
@@ -127,101 +130,89 @@ export default function Sidebar({ open, setOpen }) {
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop Overlay */}
       {isMobile && open && (
         <div
-          className="fixed inset-0 z-40"
-          style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
           onClick={() => setOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <aside style={sidebarStyle} className="select-none">
-        <div
-          style={{ width: "260px", display: "flex", flexDirection: "column", height: "100%" }}
-        >
-          {/* ─── Logo ─── */}
+      {/* Sidebar Panel */}
+      <aside
+        style={sidebarStyle}
+        className="select-none bg-mm-sidebar border-r border-mm-border text-mm-text"
+      >
+        <div style={{ width: "260px", display: "flex", flexDirection: "column", height: "100%" }}>
+          {/* ─── Logo / Brand ─── */}
           <div
-            className="flex items-center gap-3 px-4 py-4 shrink-0"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+            className="flex items-center gap-3 px-4 py-4 shrink-0 border-b border-mm-border"
           >
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center gradient-bg shrink-0"
-              style={{ boxShadow: "0 0 18px rgba(124,58,237,0.4)" }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center gradient-bg shrink-0 shadow-glow-purple"
+              style={{ boxShadow: "0 0 16px var(--glass-border)" }}
             >
               <span className="text-white font-black text-base select-none">M</span>
             </div>
-            <div>
-              <p className="font-bold text-white text-base leading-none tracking-tight">
+            <div className="flex flex-col">
+              <p className="font-bold text-mm-text text-base leading-none tracking-tight">
                 MindMesh
               </p>
-              <p className="text-xs mt-0.5" style={{ color: "#4B5563" }}>
+              <p className="text-[10px] mt-1 text-mm-muted font-medium uppercase tracking-wider">
                 AI Workspace
               </p>
             </div>
           </div>
 
-          {/* ─── New Chat ─── */}
+          {/* ─── New Chat button ─── */}
           <div className="px-3 pt-3 pb-2 shrink-0">
             <button
               onClick={() => {
                 createNewChat();
                 if (isMobile) setOpen(false);
               }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white transition-all duration-250 hover:scale-[1.01]"
               style={{
-                background: "linear-gradient(135deg, #7C3AED, #06B6D4)",
-                boxShadow: "0 4px 16px rgba(124,58,237,0.3)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 6px 24px rgba(124,58,237,0.5)";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "0 4px 16px rgba(124,58,237,0.3)";
-                e.currentTarget.style.transform = "translateY(0)";
+                background: "linear-gradient(135deg, var(--accent-purple), var(--accent-cyan))",
+                boxShadow: "var(--glow-purple)",
               }}
             >
-              <PlusIcon size={15} />
-              New Chat
+              <PlusIcon size={14} />
+              New Conversation
             </button>
           </div>
 
-          {/* ─── Search ─── */}
+          {/* ─── Search Bar ─── */}
           <div className="px-3 pb-3 shrink-0">
             <div className="relative">
-              <span
-                className="absolute left-3 top-1/2 -translate-y-1/2"
-                style={{ color: "#6B7280" }}
-              >
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-mm-muted">
                 <SearchIcon size={13} />
               </span>
               <input
                 type="text"
-                placeholder="Search chats..."
+                placeholder="Search index..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="search-input pl-8"
+                className="search-input pl-8 bg-mm-card border border-mm-border text-mm-text rounded-xl"
               />
             </div>
           </div>
 
-          {/* ─── Section Label ─── */}
-          <div className="px-4 pb-1.5 shrink-0 flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#374151" }}>
+          {/* ─── Section Header ─── */}
+          <div className="px-4 pb-1.5 shrink-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-mm-muted">
               Recent Chats
             </p>
           </div>
 
-          {/* ─── Chat List ─── */}
+          {/* ─── Chats List ─── */}
           <div className="flex-1 overflow-y-auto px-2 pb-2 min-h-0">
             {filteredChats.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 gap-2">
-                <span className="opacity-20 text-white">
-                  <ChatBubbleIcon size={24} />
+              <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-60">
+                <span className="text-mm-muted">
+                  <ChatBubbleIcon size={20} />
                 </span>
-                <p className="text-xs text-center" style={{ color: "#4B5563" }}>
+                <p className="text-[11px] text-center text-mm-muted">
                   {search ? "No matches found" : "Workspace is empty"}
                 </p>
               </div>
@@ -231,12 +222,13 @@ export default function Sidebar({ open, setOpen }) {
                   const isActive = activeChat?._id === chat._id;
                   const isHovered = hoveredChat === chat._id;
                   const isEditing = editingChatId === chat._id;
+                  const chatLabel = getChatLabel(chat);
 
                   return (
                     <div
                       key={chat._id}
                       className={`sidebar-item ${isActive ? "active" : ""}`}
-                      style={{ animationDelay: `${i * 0.03}s` }}
+                      style={{ animationDelay: `${i * 0.02}s` }}
                       onClick={() => {
                         if (!isEditing) {
                           setActiveChat(chat);
@@ -248,7 +240,7 @@ export default function Sidebar({ open, setOpen }) {
                     >
                       <span
                         className="shrink-0"
-                        style={{ color: isActive ? "#06B6D4" : "#4B5563" }}
+                        style={{ color: isActive ? "var(--accent-cyan)" : "var(--text-muted)" }}
                       >
                         <ChatBubbleIcon size={13} />
                       </span>
@@ -263,48 +255,46 @@ export default function Sidebar({ open, setOpen }) {
                             if (e.key === "Enter") handleRename(chat._id);
                             if (e.key === "Escape") setEditingChatId(null);
                           }}
-                          className="bg-white/10 text-white text-xs px-2 py-0.5 rounded outline-none border border-[#7C3AED]/40 w-full"
+                          className="bg-mm-card border border-mm-purple/40 text-mm-text text-xs px-2 py-0.5 rounded outline-none w-full"
                           autoFocus
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
                         <span
                           className="text-xs flex-1 truncate pr-1"
+                          title={chatLabel} // Tooltip showing full text
                           style={{
-                            color: isActive ? "#F9FAFB" : "rgba(249,250,251,0.65)",
+                            color: isActive ? "var(--text-primary)" : "var(--text-muted)",
                             fontWeight: isActive ? 600 : 400,
                           }}
                         >
-                          {getChatLabel(chat)}
+                          {chatLabel}
                         </span>
                       )}
 
-                      {/* Action Buttons on Hover */}
+                      {/* Hover action icons */}
                       {(isHovered || isActive) && !isEditing && (
                         <div className="flex gap-1 shrink-0 bg-transparent">
                           <button
                             onClick={(e) => startRename(e, chat)}
-                            className="w-5 h-5 flex items-center justify-center rounded opacity-60 hover:opacity-100 hover:bg-white/5 transition-all"
-                            style={{ color: "#9CA3AF" }}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors text-mm-muted"
                             title="Rename chat"
                           >
-                            <EditIcon size={11} />
+                            <EditIcon size={10} />
                           </button>
                           <button
                             onClick={(e) => toggleHide(e, chat._id)}
-                            className="w-5 h-5 flex items-center justify-center rounded opacity-60 hover:opacity-100 hover:bg-white/5 transition-all"
-                            style={{ color: "#F59E0B" }}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors text-yellow-500"
                             title="Hide chat"
                           >
-                            <EyeOffIcon size={11} />
+                            <EyeOffIcon size={10} />
                           </button>
                           <button
                             onClick={(e) => deleteChat(e, chat._id)}
-                            className="w-5 h-5 flex items-center justify-center rounded opacity-60 hover:opacity-100 hover:bg-white/5 transition-all"
-                            style={{ color: "#EF4444" }}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 dark:hover:bg-white/5 transition-colors text-red-500"
                             title="Delete chat"
                           >
-                            <TrashIcon size={11} />
+                            <TrashIcon size={10} />
                           </button>
                         </div>
                       )}
@@ -314,10 +304,10 @@ export default function Sidebar({ open, setOpen }) {
               </div>
             )}
 
-            {/* Hidden chats section */}
+            {/* Hidden items list */}
             {hiddenChats.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-white/5 px-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1 text-gray-500">
+              <div className="mt-4 pt-3 border-t border-mm-border px-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1 text-mm-muted">
                   Hidden Items
                 </p>
                 {chats
@@ -327,13 +317,12 @@ export default function Sidebar({ open, setOpen }) {
                       key={chat._id}
                       className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-white/[0.02]"
                     >
-                      <span className="text-xs truncate flex-1" style={{ color: "#4B5563" }}>
+                      <span className="text-xs truncate flex-1 text-mm-muted">
                         {getChatLabel(chat)}
                       </span>
                       <button
                         onClick={(e) => toggleHide(e, chat._id)}
-                        className="text-[10px] font-semibold ml-2 shrink-0 hover:text-mm-cyan-light transition-colors"
-                        style={{ color: "#06B6D4" }}
+                        className="text-[10px] font-semibold ml-2 shrink-0 text-mm-cyan hover:text-mm-cyan-light transition-colors"
                       >
                         Restore
                       </button>
@@ -343,54 +332,42 @@ export default function Sidebar({ open, setOpen }) {
             )}
           </div>
 
-          {/* ─── Footer ─── */}
+          {/* ─── Footer Controls ─── */}
           <div
-            className="shrink-0 p-3 space-y-1"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            className="shrink-0 p-3 space-y-1.5 border-t border-mm-border"
           >
-            {/* Settings */}
+            {/* Settings button */}
             <button
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200"
-              style={{ color: "rgba(249,250,251,0.5)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                e.currentTarget.style.color = "rgba(249,250,251,0.9)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "rgba(249,250,251,0.5)";
-              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-mm-muted hover:bg-mm-card-hover hover:text-mm-text transition-all duration-200"
             >
-              <SettingsIcon size={15} />
+              <SettingsIcon size={14} />
               Workspace Settings
             </button>
 
-            {/* User Profile */}
+            {/* User Profile bar */}
             <div
-              className="flex items-center gap-2 px-2.5 py-2 rounded-xl"
-              style={{ border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.01)" }}
+              className="flex items-center gap-2 px-2.5 py-2 rounded-xl border border-mm-border bg-mm-card/30"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs gradient-bg shrink-0 select-none"
-                style={{ boxShadow: "0 0 10px rgba(124,58,237,0.3)" }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs gradient-bg shrink-0 shadow-sm"
+                style={{ boxShadow: "0 0 10px var(--glass-border)" }}
               >
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white truncate">
+                <p className="text-xs font-bold text-mm-text truncate">
                   {user?.name || "User"}
                 </p>
-                <p className="text-[10px] truncate" style={{ color: "#4B5563" }}>
+                <p className="text-[10px] text-mm-muted truncate">
                   {user?.email || ""}
                 </p>
               </div>
               <button
                 onClick={logout}
-                className="btn-icon shrink-0 hover:bg-red-500/10 border border-red-500/20"
+                className="btn-icon shrink-0 w-7 h-7 hover:bg-red-500/10 border border-red-500/20 text-red-500"
                 title="Logout"
-                style={{ color: "#EF4444" }}
               >
-                <LogoutIcon size={13} />
+                <LogoutIcon size={12} />
               </button>
             </div>
           </div>

@@ -12,12 +12,6 @@ import ProtectedRoute from "./components/layout/ProtectedRoute";
 function App() {
   const { user, loading } = useAuth();
 
-  // Always force dark mode for MindMesh
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
-    document.documentElement.style.backgroundColor = "#0B1020";
-  }, []);
-
   if (loading) {
     return (
       <div
