@@ -204,7 +204,8 @@ export default function Sidebar({ open, setOpen }) {
                 placeholder="Search index..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="search-input pl-8 bg-mm-card border border-mm-border text-mm-text rounded-xl"
+                className="search-input bg-mm-card border border-mm-border text-mm-text rounded-xl"
+                style={{ paddingLeft: "32px" }}
               />
             </div>
           </div>

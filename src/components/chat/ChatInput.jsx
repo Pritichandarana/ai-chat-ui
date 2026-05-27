@@ -658,7 +658,7 @@ export default function ChatInput() {
                 {/* Floating Plus Dropdown Menu */}
                 {plusMenuOpen && (
                   <div
-                    className="absolute left-0 bottom-full mb-3 w-52 rounded-2xl glass p-1.5 shadow-2xl border border-mm-border bg-mm-card z-50 origin-bottom-left"
+                    className="absolute left-0 bottom-full mb-3 w-52 rounded-2xl p-1.5 shadow-2xl border border-mm-border bg-mm-card z-50 origin-bottom-left"
                     style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
                   >
                     <button
@@ -743,7 +743,7 @@ export default function ChatInput() {
 
                   {focusDropdownOpen && (
                     <div
-                      className="absolute left-0 bottom-full mb-2 w-56 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50"
+                      className="absolute left-0 bottom-full mb-2 w-56 rounded-xl p-1 shadow-2xl border border-mm-border bg-mm-card z-50"
                       style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
                     >
                       {FOCUS_MODES.map((f) => {
@@ -794,7 +794,7 @@ export default function ChatInput() {
 
                   {modelDropdownOpen && (
                     <div
-                      className="absolute left-0 bottom-full mb-2 w-64 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50 animate-fade-in-up"
+                      className="absolute left-0 bottom-full mb-2 w-64 rounded-xl p-1 shadow-2xl border border-mm-border bg-mm-card z-50 animate-fade-in-up"
                       style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
                     >
                       <div className="px-2.5 py-1 text-[8px] uppercase tracking-widest font-black text-mm-muted border-b border-mm-border mb-1">
