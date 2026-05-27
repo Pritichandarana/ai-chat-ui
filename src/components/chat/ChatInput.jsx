@@ -11,6 +11,8 @@ import {
   StopIcon,
   ChevronDownIcon,
   CheckIcon,
+  PlusIcon,
+  ImageIcon,
 } from "../ui/Icons";
 
 const MODELS = [
@@ -168,6 +170,7 @@ export default function ChatInput() {
   const [focusMode, setFocusMode] = useState("All");
   const [focusDropdownOpen, setFocusDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const [simulatedSearchStatus, setSimulatedSearchStatus] = useState("");
 
   const { activeChat, setChats, setActiveChat, setIsAiTyping, selectedModel, setSelectedModel } =
@@ -181,6 +184,7 @@ export default function ChatInput() {
   const recordTimerRef = useRef(null);
   const focusRef = useRef(null);
   const modelRef = useRef(null);
+  const plusMenuRef = useRef(null);
 
   // Close dropdowns
   useEffect(() => {
@@ -190,6 +194,9 @@ export default function ChatInput() {
       }
       if (modelRef.current && !modelRef.current.contains(e.target)) {
         setModelDropdownOpen(false);
+      }
+      if (plusMenuRef.current && !plusMenuRef.current.contains(e.target)) {
+        setPlusMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", clickOutside);
@@ -510,6 +517,14 @@ export default function ChatInput() {
     return () => window.removeEventListener("mm:regenerate-message", handleRegen);
   }, [activeChat, sendMessage, setActiveChat]);
 
+  const triggerFileInput = (acceptType) => {
+    if (fileRef.current) {
+      fileRef.current.accept = acceptType;
+      fileRef.current.click();
+    }
+    setPlusMenuOpen(false);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -587,7 +602,7 @@ export default function ChatInput() {
 
           {/* Floating Input Panel */}
           <div
-            className={`glass input-ring rounded-2xl relative shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-mm-border bg-mm-card/65 backdrop-blur-2xl ${
+            className={`glass input-ring rounded-2xl relative shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-mm-border bg-mm-card/65 backdrop-blur-2xl flex flex-col p-3 ${
               dragActive ? "drag-active" : ""
             }`}
             onDrop={handleDrop}
@@ -602,204 +617,8 @@ export default function ChatInput() {
               </div>
             )}
 
-            {/* Top Toolbar: Action icons, Focus dropdown, and Web search toggle */}
-            <div
-              className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 select-none"
-            >
-              {/* Attach File */}
-              <input
-                type="file"
-                ref={fileRef}
-                hidden
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
-                onChange={handleFileChange}
-              />
-              <button
-                className="btn-icon w-8 h-8 rounded-lg"
-                title="Upload attachments"
-                onClick={() => fileRef.current?.click()}
-              >
-                <PaperclipIcon size={14} />
-              </button>
-
-              {/* Dictation */}
-              <button
-                className="btn-icon w-8 h-8 rounded-lg"
-                title="Voice dictation"
-                onClick={handleMic}
-              >
-                <MicIcon size={14} />
-              </button>
-
-              {/* Audio recording */}
-              <button
-                className={`btn-icon w-8 h-8 rounded-lg ${recording && recordingKind === "audio" ? "recording" : ""}`}
-                title="Record audio memo"
-                onClick={() => (recording ? stopRecording() : startRecording("audio"))}
-              >
-                {recording && recordingKind === "audio" ? <StopIcon size={12} /> : <MicIcon size={14} />}
-              </button>
-
-              {/* Video recording */}
-              <button
-                className={`btn-icon w-8 h-8 rounded-lg ${recording && recordingKind === "video" ? "recording" : ""}`}
-                title="Record video memo"
-                onClick={() => (recording ? stopRecording() : startRecording("video"))}
-              >
-                {recording && recordingKind === "video" ? <StopIcon size={12} /> : <VideoIcon size={14} />}
-              </button>
-
-              {/* Generate Image Button */}
-              <button
-                className="btn-icon w-8 h-8 rounded-lg"
-                title="Generate illustration"
-                onClick={() => setShowImageGen(true)}
-                style={{
-                  background: "rgba(124,58,237,0.1)",
-                  borderColor: "rgba(124,58,237,0.2)",
-                  color: "#a78bfa",
-                }}
-              >
-                <SparklesIcon size={13} />
-              </button>
-
-              <div className="h-4 w-px bg-white/5 mx-1" />
-
-              {/* Focus selector (Perplexity Inspired) */}
-              <div className="relative" ref={focusRef}>
-                <button
-                  type="button"
-                  onClick={() => setFocusDropdownOpen(!focusDropdownOpen)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors"
-                >
-                  <span className="text-xs">{activeFocusObj.icon}</span>
-                  <span>{activeFocusObj.name}</span>
-                </button>
-
-                {focusDropdownOpen && (
-                  <div
-                    className="absolute left-0 bottom-full mb-2 w-56 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card"
-                    style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
-                  >
-                    {FOCUS_MODES.map((f) => {
-                      const isSel = f.name === focusMode;
-                      return (
-                        <button
-                          key={f.name}
-                          type="button"
-                          onClick={() => {
-                            setFocusMode(f.name);
-                            setFocusDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
-                            isSel ? "bg-mm-purple/10 text-mm-purple" : "hover:bg-mm-card-hover text-mm-muted"
-                          }`}
-                        >
-                          <span className="text-sm select-none">{f.icon}</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-mm-text">{f.name}</p>
-                            <p className="text-[9px] text-mm-muted truncate mt-0.5">{f.desc}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Model Switcher dropdown */}
-              <div className="relative" ref={modelRef}>
-                <button
-                  type="button"
-                  onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors select-none"
-                >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{
-                      backgroundColor: activeModelObj.tagColor,
-                      boxShadow: `0 0 6px ${activeModelObj.tagColor}`,
-                    }}
-                  />
-                  <span>{activeModelObj.name}</span>
-                  <span className="text-mm-muted">
-                    <ChevronDownIcon size={10} />
-                  </span>
-                </button>
-
-                {modelDropdownOpen && (
-                  <div
-                    className="absolute left-0 bottom-full mb-2 w-64 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50 animate-fade-in-up"
-                    style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
-                  >
-                    <div className="px-2.5 py-1 text-[8px] uppercase tracking-widest font-black text-mm-muted border-b border-mm-border mb-1">
-                      Choose AI Model
-                    </div>
-                    {MODELS.map((m) => {
-                      const isSel = m.name === selectedModel;
-                      return (
-                        <button
-                          key={m.name}
-                          type="button"
-                          onClick={() => {
-                            setSelectedModel(m.name);
-                            setModelDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-all duration-150 border ${
-                            isSel ? "bg-mm-purple/10 border-mm-purple/20 text-mm-text" : "hover:bg-mm-card-hover border-transparent text-mm-muted"
-                          }`}
-                        >
-                          <div
-                            className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                            style={{
-                              backgroundColor: m.tagColor,
-                              boxShadow: `0 0 4px ${m.tagColor}`
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-mm-text">{m.name}</span>
-                              <span className="text-[7px] px-1 rounded bg-mm-sidebar border border-mm-border text-mm-muted font-mono font-bold">
-                                {m.provider}
-                              </span>
-                            </div>
-                            <p className="text-[9px] text-mm-muted mt-0.5">{m.speed}</p>
-                          </div>
-                          {isSel && (
-                            <span className="text-mm-cyan shrink-0 mt-0.5">
-                              <CheckIcon size={10} />
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1" />
-
-              {/* Web Search Toggle (Glowing active) */}
-              <button
-                type="button"
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
-                  webSearchEnabled
-                    ? "bg-[#06B6D4]/12 border-[#06B6D4]/45 text-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.22)]"
-                    : "bg-mm-card border-mm-border text-mm-muted hover:text-mm-text"
-                }`}
-              >
-                <div
-                  className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform ${
-                    webSearchEnabled ? "bg-[#06B6D4] animate-pulse" : "bg-mm-muted"
-                  }`}
-                />
-                <span>Web Search</span>
-              </button>
-            </div>
-
-            {/* Input Form Text Area & Send Button */}
-            <div className="flex items-end gap-3 p-3">
+            {/* Input Text Area (Top) */}
+            <div className="w-full px-1 pb-1">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -811,29 +630,258 @@ export default function ChatInput() {
                     : `Query MindMesh using ${focusMode} mode… (Shift+Enter for newline)`
                 }
                 rows={1}
-                className="flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed text-mm-text max-h-[140px] min-h-[22px] placeholder-gray-500"
+                className="w-full bg-transparent text-sm resize-none outline-none leading-relaxed text-mm-text max-h-[160px] min-h-[26px] placeholder-gray-500/80"
               />
+            </div>
 
-              <button
-                onClick={() => sendMessage()}
-                disabled={!canSend}
-                className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200"
-                style={{
-                  background: canSend
-                    ? "linear-gradient(135deg,#7C3AED,#6D28D9)"
-                    : "rgba(255,255,255,0.04)",
-                  border: canSend ? "1px solid rgba(124,58,237,0.4)" : "1px solid rgba(255,255,255,0.05)",
-                  color: canSend ? "white" : "#4B5563",
-                  boxShadow: canSend ? "0 0 12px rgba(124,58,237,0.3)" : "none",
-                  cursor: canSend ? "pointer" : "not-allowed",
-                }}
-              >
-                {sending ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                ) : (
-                  <SendIcon size={13} />
+            {/* Action Toolbar (Bottom) */}
+            <div className="flex items-center justify-between pt-2.5 pb-0.5 border-t border-mm-border/10 select-none">
+              
+              {/* Left action: Plus button dropdown */}
+              <div className="relative flex items-center" ref={plusMenuRef}>
+                <input
+                  type="file"
+                  ref={fileRef}
+                  hidden
+                  onChange={handleFileChange}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => setPlusMenuOpen(!plusMenuOpen)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-mm-card-hover/40 border border-mm-border hover:bg-mm-card-hover text-mm-muted hover:text-mm-text transition-all duration-200 shadow-sm"
+                  title="Add attachments & actions"
+                >
+                  <PlusIcon size={13} className={`transition-transform duration-250 ${plusMenuOpen ? "rotate-45" : ""}`} />
+                </button>
+
+                {/* Floating Plus Dropdown Menu */}
+                {plusMenuOpen && (
+                  <div
+                    className="absolute left-0 bottom-full mb-3 w-52 rounded-2xl glass p-1.5 shadow-2xl border border-mm-border bg-mm-card z-50 origin-bottom-left"
+                    style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => triggerFileInput(".pdf,.doc,.docx,.txt,.csv,.json,.xlsx,.zip")}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left hover:bg-mm-card-hover hover:scale-[1.01] transition-all group"
+                    >
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center bg-mm-purple/10 text-mm-purple shrink-0 group-hover:scale-105 transition-transform">
+                        <PaperclipIcon size={12} />
+                      </span>
+                      <span className="text-xs font-semibold text-mm-text">Upload File</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => triggerFileInput("image/*")}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left hover:bg-mm-card-hover hover:scale-[1.01] transition-all group"
+                    >
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center bg-mm-cyan/10 text-mm-cyan shrink-0 group-hover:scale-105 transition-transform">
+                        <ImageIcon size={12} />
+                      </span>
+                      <span className="text-xs font-semibold text-mm-text">Upload Image</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startRecording("audio");
+                        setPlusMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left hover:bg-mm-card-hover hover:scale-[1.01] transition-all group"
+                    >
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center bg-yellow-500/10 text-yellow-500 shrink-0 group-hover:scale-105 transition-transform">
+                        <MicIcon size={12} />
+                      </span>
+                      <span className="text-xs font-semibold text-mm-text">Record Audio</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startRecording("video");
+                        setPlusMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left hover:bg-mm-card-hover hover:scale-[1.01] transition-all group"
+                    >
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center bg-red-500/10 text-red-500 shrink-0 group-hover:scale-105 transition-transform">
+                        <VideoIcon size={12} />
+                      </span>
+                      <span className="text-xs font-semibold text-mm-text">Record Video</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowImageGen(true);
+                        setPlusMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left hover:bg-mm-card-hover hover:scale-[1.01] transition-all group border-t border-mm-border/30 mt-1 pt-2"
+                    >
+                      <span className="w-7 h-7 rounded-xl flex items-center justify-center bg-mm-purple/10 text-mm-purple shrink-0 group-hover:scale-105 transition-transform">
+                        <SparklesIcon size={12} />
+                      </span>
+                      <span className="text-xs font-semibold text-mm-text">Create Image</span>
+                    </button>
+                  </div>
                 )}
-              </button>
+              </div>
+
+              {/* Right actions: Focus, Model, Web Search, Send */}
+              <div className="flex items-center gap-2">
+                {/* Focus selector (Perplexity Inspired) */}
+                <div className="relative" ref={focusRef}>
+                  <button
+                    type="button"
+                    onClick={() => setFocusDropdownOpen(!focusDropdownOpen)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors"
+                  >
+                    <span className="text-xs">{activeFocusObj.icon}</span>
+                    <span>{activeFocusObj.name}</span>
+                  </button>
+
+                  {focusDropdownOpen && (
+                    <div
+                      className="absolute left-0 bottom-full mb-2 w-56 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50"
+                      style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+                    >
+                      {FOCUS_MODES.map((f) => {
+                        const isSel = f.name === focusMode;
+                        return (
+                          <button
+                            key={f.name}
+                            type="button; focus"
+                            onClick={() => {
+                              setFocusMode(f.name);
+                              setFocusDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
+                              isSel ? "bg-mm-purple/10 text-mm-purple" : "hover:bg-mm-card-hover text-mm-muted"
+                            }`}
+                          >
+                            <span className="text-sm select-none">{f.icon}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-mm-text">{f.name}</p>
+                              <p className="text-[9px] text-mm-muted truncate mt-0.5">{f.desc}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Model Switcher dropdown */}
+                <div className="relative" ref={modelRef}>
+                  <button
+                    type="button"
+                    onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-mm-card/25 border border-mm-border hover:bg-mm-card-hover text-mm-text transition-colors select-none"
+                  >
+                    <div
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: activeModelObj.tagColor,
+                        boxShadow: `0 0 6px ${activeModelObj.tagColor}`,
+                      }}
+                    />
+                    <span>{activeModelObj.name}</span>
+                    <span className="text-mm-muted">
+                      <ChevronDownIcon size={10} />
+                    </span>
+                  </button>
+
+                  {modelDropdownOpen && (
+                    <div
+                      className="absolute left-0 bottom-full mb-2 w-64 rounded-xl glass p-1 shadow-2xl border border-mm-border bg-mm-card z-50 animate-fade-in-up"
+                      style={{ animation: "fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both" }}
+                    >
+                      <div className="px-2.5 py-1 text-[8px] uppercase tracking-widest font-black text-mm-muted border-b border-mm-border mb-1">
+                        Choose AI Model
+                      </div>
+                      {MODELS.map((m) => {
+                        const isSel = m.name === selectedModel;
+                        return (
+                          <button
+                            key={m.name}
+                            type="button"
+                            onClick={() => {
+                              setSelectedModel(m.name);
+                              setModelDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-all duration-150 border ${
+                              isSel ? "bg-mm-purple/10 border-mm-purple/20 text-mm-text" : "hover:bg-mm-card-hover border-transparent text-mm-muted"
+                            }`}
+                          >
+                            <div
+                              className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                              style={{
+                                backgroundColor: m.tagColor,
+                                boxShadow: `0 0 4px ${m.tagColor}`
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-mm-text">{m.name}</span>
+                                <span className="text-[7px] px-1 rounded bg-mm-sidebar border border-mm-border text-mm-muted font-mono font-bold">
+                                  {m.provider}
+                                </span>
+                              </div>
+                              <p className="text-[9px] text-mm-muted mt-0.5">{m.speed}</p>
+                            </div>
+                            {isSel && (
+                              <span className="text-mm-cyan shrink-0 mt-0.5">
+                                <CheckIcon size={10} />
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Web Search Toggle (Glowing active) */}
+                <button
+                  type="button"
+                  onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
+                    webSearchEnabled
+                      ? "bg-[#06B6D4]/12 border-[#06B6D4]/45 text-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.22)]"
+                      : "bg-mm-card border-mm-border text-mm-muted hover:text-mm-text"
+                  }`}
+                >
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform ${
+                      webSearchEnabled ? "bg-[#06B6D4] animate-pulse" : "bg-mm-muted"
+                    }`}
+                  />
+                  <span>Web Search</span>
+                </button>
+
+                {/* Send Button */}
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={!canSend}
+                  className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200"
+                  style={{
+                    background: canSend
+                      ? "linear-gradient(135deg,#7C3AED,#6D28D9)"
+                      : "var(--bg-sidebar)",
+                    border: canSend ? "1px solid rgba(124,58,237,0.4)" : "1px solid var(--border-subtle)",
+                    color: canSend ? "white" : "var(--text-muted)",
+                    boxShadow: canSend ? "0 0 12px rgba(124,58,237,0.3)" : "none",
+                    cursor: canSend ? "pointer" : "not-allowed",
+                  }}
+                >
+                  {sending ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  ) : (
+                    <SendIcon size={13} />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
