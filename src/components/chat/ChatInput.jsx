@@ -555,7 +555,7 @@ export default function ChatInput() {
               ) : (
                 <div className="file-preview-chip shadow-md">
                   <span>{getFileIcon(file)}</span>
-                  <span className="truncate max-w-[120px] font-semibold text-gray-200">
+                  <span className="truncate max-w-[120px] font-semibold text-mm-text">
                     {file.name}
                   </span>
                   <span className="text-[10px] text-gray-500 font-mono">
@@ -700,12 +700,12 @@ export default function ChatInput() {
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
                   webSearchEnabled
                     ? "bg-[#06B6D4]/12 border-[#06B6D4]/45 text-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.22)]"
-                    : "bg-white/5 border-white/5 text-gray-500 hover:text-gray-300"
+                    : "bg-mm-card border-mm-border text-mm-muted hover:text-mm-text"
                 }`}
               >
                 <div
                   className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform ${
-                    webSearchEnabled ? "bg-[#06B6D4] animate-pulse" : "bg-gray-500"
+                    webSearchEnabled ? "bg-[#06B6D4] animate-pulse" : "bg-mm-muted"
                   }`}
                 />
                 <span>Web Search</span>

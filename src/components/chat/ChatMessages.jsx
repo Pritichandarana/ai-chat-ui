@@ -74,7 +74,7 @@ function CodeBlock({ language, children }) {
 // ─── Markdown Renderer ───
 function MarkdownContent({ content }) {
   return (
-    <div className="prose-mm text-gray-200">
+    <div className="prose-mm text-mm-text">
       <ReactMarkdown
         components={{
           code({ node, inline, className, children, ...props }) {
@@ -244,11 +244,11 @@ function Message({ msg, index, userInitial, isLast }) {
         </div>
 
         {/* Hover Action Overlay panel (Linear Style) */}
-        <div className="absolute -top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 glass p-1 rounded-xl shadow-lg border border-white/10 z-10">
+        <div className="absolute -top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 glass p-1 rounded-xl shadow-lg border border-mm-border z-10">
           {/* Copy response */}
           <button
             onClick={handleCopyText}
-            className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-mm-card-hover text-mm-muted hover:text-mm-text transition-colors"
             title="Copy answer"
           >
             {copied ? <CheckIcon size={11} /> : <CopyIcon size={11} />}
@@ -258,20 +258,20 @@ function Message({ msg, index, userInitial, isLast }) {
           {isLast && (
             <button
               onClick={handleRegenerate}
-              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-mm-card-hover text-mm-muted hover:text-mm-text transition-colors"
               title="Regenerate answer"
             >
               <ReloadIcon size={10} />
             </button>
           )}
 
-          <div className="w-px h-3.5 bg-white/10 mx-0.5" />
+          <div className="w-px h-3.5 bg-mm-border mx-0.5" />
 
           {/* Thumbs up */}
           <button
             onClick={() => setRating(rating === "up" ? null : "up")}
-            className={`w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors ${
-              rating === "up" ? "text-green-400" : "text-gray-400 hover:text-white"
+            className={`w-6 h-6 flex items-center justify-center rounded-lg hover:bg-mm-card-hover transition-colors ${
+              rating === "up" ? "text-green-400" : "text-mm-muted hover:text-mm-text"
             }`}
             title="Good response"
           >
@@ -281,8 +281,8 @@ function Message({ msg, index, userInitial, isLast }) {
           {/* Thumbs down */}
           <button
             onClick={() => setRating(rating === "down" ? null : "down")}
-            className={`w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors ${
-              rating === "down" ? "text-red-400" : "text-gray-400 hover:text-white"
+            className={`w-6 h-6 flex items-center justify-center rounded-lg hover:bg-mm-card-hover transition-colors ${
+              rating === "down" ? "text-red-400" : "text-mm-muted hover:text-mm-text"
             }`}
             title="Bad response"
           >
@@ -326,15 +326,15 @@ export default function ChatMessages() {
     >
       {/* Date divider */}
       <div className="flex items-center gap-3 px-6 mb-5">
-        <div className="flex-1 h-px bg-white/5" />
-        <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 select-none">
+        <div className="flex-1 h-px bg-mm-border" />
+        <span className="text-[10px] uppercase font-bold tracking-widest text-mm-muted select-none">
           {new Date().toLocaleDateString([], {
             weekday: "long",
             month: "long",
             day: "numeric",
           })}
         </span>
-        <div className="flex-1 h-px bg-white/5" />
+        <div className="flex-1 h-px bg-mm-border" />
       </div>
 
       {/* Messages */}
