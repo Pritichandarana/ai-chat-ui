@@ -20,10 +20,117 @@ export default function AuthPage() {
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
   const [resending, setResending] = useState(false);
 
+  // OTP Verification flow states
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [verificationToken, setVerificationToken] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  // Timer countdown
+  useEffect(() => {
+    let interval = null;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   // Strict email validation regex
   const validateEmail = (emailStr) => {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return regex.test(emailStr);
+  };
+
+  // ✅ SEND OTP
+  const handleSendOTP = async () => {
+    const cleanedEmail = email.trim().toLowerCase();
+    if (!cleanedEmail || !validateEmail(cleanedEmail)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    const disposableDomains = [
+      "mailinator.com",
+      "tempmail.com",
+      "10minutemail.com",
+      "guerrillamail.com",
+      "yopmail.com",
+      "fakeinbox.com"
+    ];
+    const domain = cleanedEmail.split("@")[1];
+    if (disposableDomains.includes(domain?.toLowerCase())) {
+      toast.error("Temporary email addresses are not supported.");
+      return;
+    }
+
+    setSendingOtp(true);
+    try {
+      const res = await fetch(`${API}/api/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanedEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to send verification code.");
+        return;
+      }
+
+      toast.success("Verification code sent to your email");
+      setOtpSent(true);
+      setTimer(30);
+      setOtpCode(""); // clear previous code
+    } catch (err) {
+      console.error("SEND OTP ERROR:", err);
+      toast.error("Unable to connect to the server");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  // ✅ VERIFY OTP
+  const handleVerifyOTP = async (code) => {
+    const cleanedEmail = email.trim().toLowerCase();
+    setVerifyingOtp(true);
+    try {
+      const res = await fetch(`${API}/api/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanedEmail, code }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Invalid verification code.");
+        return;
+      }
+
+      toast.success("Email verified successfully.");
+      setIsEmailVerified(true);
+      setVerificationToken(data.token);
+      setOtpSent(false);
+    } catch (err) {
+      console.error("VERIFY OTP ERROR:", err);
+      toast.error("Unable to connect to the server");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleOtpChange = (e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtpCode(val);
+    if (val.length === 6) {
+      handleVerifyOTP(val);
+    }
   };
 
   // ✅ SUBMIT ACTION
@@ -39,20 +146,9 @@ export default function AuthPage() {
       toast.error("Please enter a valid email address.");
       return;
     }
-    if (isSignup) {
-      const disposableDomains = [
-        "mailinator.com",
-        "tempmail.com",
-        "10minutemail.com",
-        "guerrillamail.com",
-        "yopmail.com",
-        "fakeinbox.com"
-      ];
-      const domain = cleanedEmail.split("@")[1];
-      if (disposableDomains.includes(domain?.toLowerCase())) {
-        toast.error("Temporary email addresses are not supported.");
-        return;
-      }
+    if (isSignup && !isEmailVerified) {
+      toast.error("Please verify your email address first.");
+      return;
     }
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
@@ -68,7 +164,9 @@ export default function AuthPage() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isSignup ? { name, email: cleanedEmail, password } : { email: cleanedEmail, password }
+          isSignup
+            ? { name, email: cleanedEmail, password, verificationToken }
+            : { email: cleanedEmail, password }
         ),
       });
 
@@ -285,66 +383,174 @@ export default function AuthPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-mm-muted pl-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  className="w-full px-4 py-3 text-sm text-white rounded-xl bg-white/5 border border-white/10 outline-none transition-all duration-200 focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] focus:bg-white/[0.07]"
-                  placeholder="sarah@mindmesh.ai"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-mm-muted">Password</label>
-                  {!isSignup && (
-                    <span
-                      onClick={() => navigate("/forgot-password")}
-                      className="text-xs text-mm-cyan cursor-pointer hover:text-mm-cyan-light hover:underline transition-colors"
-                    >
-                      Forgot Password?
-                    </span>
-                  )}
-                </div>
-                
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type="email"
                     required
-                    className="w-full px-4 py-3 text-sm text-white rounded-xl bg-white/5 border border-white/10 outline-none transition-all duration-200 focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] focus:bg-white/[0.07] pr-10"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isSignup && isEmailVerified}
+                    className="w-full px-4 py-3 text-sm text-white rounded-xl bg-white/5 border border-white/10 outline-none transition-all duration-200 focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] focus:bg-white/[0.07] pr-28"
+                    placeholder="sarah@mindmesh.ai"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    <EyeOffIcon size={14} />
-                  </button>
+                  {isSignup && (
+                    <button
+                      type="button"
+                      disabled={isEmailVerified || sendingOtp}
+                      onClick={handleSendOTP}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center"
+                      style={
+                        isEmailVerified
+                          ? {
+                              color: "#06B6D4",
+                              background: "rgba(6,182,212,0.1)",
+                              border: "1px solid rgba(6,182,212,0.25)"
+                            }
+                          : {
+                              background: "linear-gradient(135deg, #7C3AED, #06B6D4)",
+                              color: "#FFFFFF",
+                              boxShadow: "0 2px 10px rgba(124,58,237,0.25)",
+                              cursor: sendingOtp ? "not-allowed" : "pointer"
+                            }
+                      }
+                      onMouseEnter={(e) => {
+                        if (!isEmailVerified && !sendingOtp) {
+                          e.currentTarget.style.boxShadow = "0 4px 14px rgba(124,58,237,0.45)";
+                          e.currentTarget.style.transform = "translateY(-1px) translateY(-50%)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isEmailVerified && !sendingOtp) {
+                          e.currentTarget.style.boxShadow = "0 2px 10px rgba(124,58,237,0.25)";
+                          e.currentTarget.style.transform = "translateY(0) translateY(-50%)";
+                        }
+                      }}
+                    >
+                      {sendingOtp ? (
+                        <div className="w-3 h-3 rounded-full border border-white/30 border-t-white animate-spin" />
+                      ) : isEmailVerified ? (
+                        "Verified ✓"
+                      ) : (
+                        "Verify"
+                      )}
+                    </button>
+                  )}
                 </div>
+                {isSignup && isEmailVerified && (
+                  <p className="text-xs text-mm-cyan pl-1 mt-1 font-semibold flex items-center gap-1 animate-fade-in">
+                    ✓ Email Verified
+                  </p>
+                )}
               </div>
+
+              {/* OTP CODE INPUT (Slides down after verification code sent) */}
+              {isSignup && otpSent && !isEmailVerified && (
+                <div className="space-y-1.5 animate-slide-down">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-mm-muted pl-1">
+                    Verification Code
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      className="w-full px-4 py-3 text-sm text-white text-center rounded-xl bg-white/5 border border-white/10 outline-none transition-all duration-200 focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] tracking-[0.5em] font-mono"
+                      placeholder="••••••"
+                      value={otpCode}
+                      onChange={handleOtpChange}
+                      disabled={verifyingOtp}
+                    />
+                    {verifyingOtp && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <div className="w-4 h-4 rounded-full border-2 border-[#06B6D4]/30 border-t-[#06B6D4] animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center px-1 pt-1 text-xs">
+                    <span className="text-mm-muted">
+                      {timer > 0 ? `Resend in ${timer} sec` : "Ready to resend"}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={timer > 0 || sendingOtp}
+                      onClick={handleSendOTP}
+                      className={`font-semibold transition-colors ${
+                        timer > 0
+                          ? "text-gray-600 cursor-not-allowed"
+                          : "text-mm-purple hover:text-mm-purple-light underline"
+                      }`}
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* PASSWORD FIELD (Fades in after email verification succeeds) */}
+              {(!isSignup || isEmailVerified) && (
+                <div className="space-y-1.5 animate-slide-down">
+                  <div className="flex justify-between items-center px-1">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-mm-muted">Password</label>
+                    {!isSignup && (
+                      <span
+                        onClick={() => navigate("/forgot-password")}
+                        className="text-xs text-mm-cyan cursor-pointer hover:text-mm-cyan-light hover:underline transition-colors"
+                      >
+                        Forgot Password?
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      className="w-full px-4 py-3 text-sm text-white rounded-xl bg-white/5 border border-white/10 outline-none transition-all duration-200 focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] focus:bg-white/[0.07] pr-10"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <EyeOffIcon size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (isSignup && (!name.trim() || !isEmailVerified || password.length < 6))}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 mt-6 flex items-center justify-center gap-2"
                 style={{
-                  background: "linear-gradient(135deg, #7C3AED, #06B6D4)",
-                  boxShadow: "0 4px 20px rgba(124,58,237,0.35)",
-                  cursor: loading ? "not-allowed" : "pointer"
+                  background: isSignup && (!name.trim() || !isEmailVerified || password.length < 6)
+                    ? "rgba(255,255,255,0.04)"
+                    : "linear-gradient(135deg, #7C3AED, #06B6D4)",
+                  border: isSignup && (!name.trim() || !isEmailVerified || password.length < 6)
+                    ? "1px solid rgba(255,255,255,0.05)"
+                    : "none",
+                  boxShadow: isSignup && (!name.trim() || !isEmailVerified || password.length < 6)
+                    ? "none"
+                    : "0 4px 20px rgba(124,58,237,0.35)",
+                  cursor: loading || (isSignup && (!name.trim() || !isEmailVerified || password.length < 6))
+                    ? "not-allowed"
+                    : "pointer",
+                  color: isSignup && (!name.trim() || !isEmailVerified || password.length < 6)
+                    ? "#4B5563"
+                    : "#FFFFFF"
                 }}
                 onMouseEnter={(e) => {
-                  if (!loading) {
+                  if (!loading && (!isSignup || (name.trim() && isEmailVerified && password.length >= 6))) {
                     e.currentTarget.style.boxShadow = "0 6px 26px rgba(124,58,237,0.5)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!loading) {
+                  if (!loading && (!isSignup || (name.trim() && isEmailVerified && password.length >= 6))) {
                     e.currentTarget.style.boxShadow = "0 4px 20px rgba(124,58,237,0.35)";
                     e.currentTarget.style.transform = "translateY(0)";
                   }
@@ -355,7 +561,7 @@ export default function AuthPage() {
                 ) : (
                   <>
                     <SparklesIcon size={14} />
-                    {isSignup ? "Register Account" : "Access Workspace"}
+                    {isSignup ? "Create Account" : "Access Workspace"}
                   </>
                 )}
               </button>
@@ -368,6 +574,11 @@ export default function AuthPage() {
                 onClick={() => {
                   setIsSignup(!isSignup);
                   setPassword("");
+                  setIsEmailVerified(false);
+                  setVerificationToken("");
+                  setOtpCode("");
+                  setOtpSent(false);
+                  setTimer(0);
                 }}
                 className="ml-1.5 text-mm-purple font-semibold cursor-pointer hover:underline hover:text-mm-purple-light transition-colors"
               >
